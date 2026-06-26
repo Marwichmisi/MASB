@@ -1,0 +1,39 @@
+{
+  "name": "masb",
+  "owner": {
+    "name": ""
+  },
+  "license": "MIT",
+  "homepage": "",
+  "repository": "",
+  "keywords": [
+    "bmad",
+    "android",
+    "mobile",
+    "workflow",
+    "agent",
+    "masb"
+  ],
+  "plugins": [
+    {
+      "name": "masb",
+      "source": "./",
+      "description": "Framework de développement guidé par l'IA pour la création d'applications mobiles Android",
+      "version": "1.0.0",
+      "author": {
+        "name": ""
+      },
+      "skills": [
+        "./masb-setup",
+        "./masb-agent-architecte",
+        "./masb-agent-research",
+        "./masb-agent-ux",
+        "./masb-agent-developpeur",
+        "./masb-agent-reviewer",
+        "./masb-agent-testeur",
+        "./masb-agent-devops",
+        "./masb-workflow-status"
+      ]
+    }
+  ]
+}
