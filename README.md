@@ -52,18 +52,28 @@ Chaque phase produit ses artefacts dans `masb-workspace/phases/NN-nom-phase/` :
 | **masb-agent-devops** | Agent (memory) | Gestion Git, branches, PRs et merges | `create-branch`, `commit-phase`, `create-pr`, `merge-phase`, `rollback`, `check-status`, `validate-gate` |
 | **masb-workflow-status** | Workflow | Suivi d'avancement du projet | `display_status` (commande: `masb status`) |
 
-### Skills Android Google wrappés
+### Skills personnalisés inclus dans ce dépôt
 
-Chaque agent MASB s'appuie sur les skills officiels Android pour garantir des implémentations conformes aux standards :
+Ces skills sont livrés avec le module et installés automatiquement :
 
-| Agent | Skills Android utilisés |
-|-------|----------------------|
-| **masb-agent-research** | `context7-cli`, `android-cli` |
-| **masb-agent-developpeur** | `camera1-to-camerax`, `navigation-3`, `edge-to-edge`, `adaptive`, `styles`, `migrate-xml-views`, `appfunctions`, `verified-email`, `wear-compose-m3`, `display-glasses-glimmer`, `play-billing`, `engage-sdk`, `font-m3-cli`, `material-symbols-cli` |
+| Skill | Version | Utilité |
+|-------|---------|---------|
+| **context7-cli** | 1.0 | Recherche de documentation contextuelle depuis le code — utilisé par `masb-agent-research` |
+| **font-m3-cli** | 1.0 | Sélection et configuration des polices Material 3 — utilisé par `masb-agent-ux` et `masb-agent-developpeur` |
+| **material-symbols-cli** | 1.0 | Recherche et intégration des Material Symbols — utilisé par `masb-agent-ux` et `masb-agent-developpeur` |
+
+### Skills Android Google utilisés comme dépendances
+
+Les agents MASB s'appuient sur les skills officiels Android Google pour garantir des implémentations conformes aux standards. Ces skills doivent être installés séparément via `android skills add` ou le marketplace Android.
+
+| Agent | Skills Android nécessaires |
+|-------|---------------------------|
+| **masb-agent-research** | `android-cli` |
+| **masb-agent-developpeur** | `camera1-to-camerax`, `navigation-3`, `edge-to-edge`, `adaptive`, `styles`, `migrate-xml-views`, `appfunctions`, `verified-email`, `wear-compose-m3`, `display-glasses-glimmer`, `play-billing`, `engage-sdk` |
 | **masb-agent-reviewer** | `android-intent-security`, `r8-analyzer` |
 | **masb-agent-testeur** | `testing-setup`, `perfetto-sql`, `perfetto-trace-analysis` |
 | **masb-agent-devops** | `agp-9-upgrade`, `android-cli` |
-| **masb-agent-ux** | `font-m3-cli`, `material-symbols-cli`, `adaptive`, `styles`, `edge-to-edge` |
+| **masb-agent-ux** | `adaptive`, `styles`, `edge-to-edge` |
 
 ### Dépendances système
 
@@ -72,11 +82,8 @@ Chaque agent MASB s'appuie sur les skills officiels Android pour garantir des im
 | Android SDK / CLI tools | Tous | `android-cli` ou `sdkmanager` |
 | JDK 17+ | Développeur, Testeur | Vérifier présence |
 | Git | DevOps | Vérifier présence |
-| Skills Google Android | Tous | `android skills add --all` |
+| Skills Android Google | Tous | `android skills add --all` |
 | `bun` | Research | Vérifier présence |
-| `context7-cli` | Research | Installer via skill |
-| `font-m3-cli` | Développeur, UX | Installer via skill |
-| `material-symbols-cli` | Développeur, UX | Installer via skill |
 
 ## Configuration
 

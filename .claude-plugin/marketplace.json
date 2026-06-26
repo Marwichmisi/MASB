@@ -32,7 +32,10 @@
         "./masb-agent-reviewer",
         "./masb-agent-testeur",
         "./masb-agent-devops",
-        "./masb-workflow-status"
+        "./masb-workflow-status",
+        "./context7-cli",
+        "./font-m3-cli",
+        "./material-symbols-cli"
       ]
     }
   ]
