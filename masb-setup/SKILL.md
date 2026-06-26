@@ -28,6 +28,65 @@ Both config scripts use an anti-zombie pattern — existing entries for this mod
 
 If the user provides arguments (e.g. `accept all defaults`, `--headless`, or inline values like `user name is BMad, I speak Swahili`), map any provided values to config keys, use defaults for the rest, and skip interactive prompting. Still display the full confirmation summary at the end.
 
+## Check Prerequisites
+
+MASB dépend de plusieurs outils et skills pour fonctionner. Vérifie chaque prérequis et guide l'utilisateur pour les installer si besoin.
+
+### 1. Android CLI
+
+Vérifie si la commande `android` est disponible. Si elle ne l'est pas :
+
+- **Linux/macOS** : propose d'installer avec `curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh | bash`
+- **Windows** : télécharger depuis https://developer.android.com/cli
+- Propose à l'utilisateur de l'installer maintenant ou de continuer (il devra le faire plus tard)
+
+### 2. Android Google Skills
+
+Une fois `android` CLI disponible, vérifie si les skills Android Google sont installés :
+
+```bash
+android skills list
+```
+
+Cette commande liste les skills installés. MASB a besoin de :
+
+| Agent | Skills Android requis |
+|-------|----------------------|
+| masb-agent-research | `android-cli` |
+| masb-agent-developpeur | `camera1-to-camerax`, `navigation-3`, `edge-to-edge`, `adaptive`, `styles`, `migrate-xml-views`, `appfunctions`, `verified-email`, `wear-compose-m3`, `display-glasses-glimmer`, `play-billing`, `engage-sdk` |
+| masb-agent-reviewer | `android-intent-security`, `r8-analyzer` |
+| masb-agent-testeur | `testing-setup`, `perfetto-sql`, `perfetto-trace-analysis` |
+| masb-agent-devops | `agp-9-upgrade`, `android-cli` |
+| masb-agent-ux | `adaptive`, `styles`, `edge-to-edge` |
+
+Pour chaque skill manquant, propose d'installer via :
+
+```bash
+android skills add <skill-name>
+```
+
+Ou en une seule commande :
+
+```bash
+android skills add --all
+```
+
+Si l'utilisateur refuse, note les skills manquants et préviens que les agents concernés ne fonctionneront pas correctement.
+
+### 3. Dépendances système
+
+Vérifie la présence de :
+
+- **JDK 17+** : `java -version` — requis par Développeur et Testeur
+- **Git** : `git --version` — requis par DevOps
+- **bun** : `bun --version` — requis par Research (pour context7-cli)
+
+Si un outil est manquant, informe l'utilisateur et donne la commande d'installation appropriée.
+
+### 4. Skills personnalisés
+
+Les skills `context7-cli`, `font-m3-cli` et `material-symbols-cli` sont inclus dans ce dépôt et installés automatiquement par `npx skills add`. Vérifie simplement qu'ils sont bien présents dans le dossier des skills.
+
 ## Collect Configuration
 
 Ask the user for values. Show defaults in brackets. Present all values together so the user can respond once with only the values they want to change (e.g. "change language to Swahili, rest are fine"). Never tell the user to "press enter" or "leave blank" — in a chat interface they must type something to respond.
