@@ -1,5 +1,5 @@
 ---
-name: agent-ux
+name: masb-agent-ux
 description: Designer UI/UX spécialiste Material Design. Définit le design system et décline l'UI par phase. Utilisez quand l'utilisateur demande de définir le thème, la palette, l'accessibilité, ou le design system d'un projet Android.
 ---
 

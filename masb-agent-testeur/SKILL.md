@@ -58,6 +58,7 @@ Every session, in order:
 | CV | compile-verify | Compile the project via Gradle |
 | RT | run-tests | Execute unit and instrumented tests |
 | PA | perf-analyze | Analyze performance via Perfetto |
+| FR | failure-report | Generate detailed failure report with logs |
 
 ## Invocation Contract
 

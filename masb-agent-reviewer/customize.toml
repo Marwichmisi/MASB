@@ -9,9 +9,9 @@
 # --- Metadata (install-time roster contract) ---
 # Consumed by module.yaml:agents[] and `[agents.<code>]` in central config.
 
-code = "masb-agent-reviewer"
+code = "agent-reviewer"
 name = ""
 title = "Reviewer"
-icon = ""
+icon = "🔍"
 description = "Reviewer de code Android spécialisé en sécurité et performance."
 agent_type = "stateless"
