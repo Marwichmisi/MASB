@@ -1,0 +1,14 @@
+{
+  "lens": "customization",
+  "verdict": "customize.toml is well-structured for a memory agent: metadata-only, narrow org hooks, sanctum correctly identified as primary surface. One secondary config mechanism found.",
+  "findings": [
+    {
+      "id": "customization-1",
+      "severity": "medium",
+      "title": "Secondary config mechanism reads config.yaml/config.user.yaml in init-sanctum.py",
+      "location": "scripts/init-sanctum.py:213-216",
+      "evidence": "init-sanctum.py reads _bmad/config.yaml and _bmad/config.user.yaml for user_name (default: friend) and communication_language (default: English), creating a parallel customization surface outside the customize.toml contract. These files are read but don't exist in this project, so defaults always apply—making the mechanism both a proliferation concern and effectively unreachable.",
+      "recommendation": "Remove the config.yaml/config.user.yaml codepath from init-sanctum.py. For a memory agent, user_name and communication_language should either be set conversationally during First Breath or, if they must be build-time configurable, added as bona-fide fields in customize.toml's agent-specific configurables section."
+    }
+  ]
+}

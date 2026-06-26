@@ -1,0 +1,460 @@
+{
+  "schema_version": 2,
+  "subject": "masb-agent-architecte",
+  "generated": "2026-06-26",
+  "verdict": "Authentic, well-cohered no-code architecte persona with sound sanctum architecture — but a heavy bootloader (2.8x guardrail), scripted discovery that contradicts its own canon, and no fallback paths for users without a clear vision.",
+  "grade": "fair",
+  "summary": "masb-agent-architecte is a well-constructed memory agent with a strong persona and clean capability chain from brainstorm to spec. The sanctum is complete and seeded, and the customization surface is correctly metadata-only. However, the bootloader SKILL.md carries duplicated sanctum-bound content at 2.8x the guardrail, the First Breath question bank contradicts the prompt-quality canon it ships, and there are no capability paths for expert users who want to skip planning or visionless users who need divergent exploration. 7 determinism leaks across memory guidance and First Breath ask the LLM to do counting and date arithmetic it cannot do reliably.",
+  "standards": {
+    "canon": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/prompt-quality-canon.md",
+    "principles": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/agent-quality-principles.md",
+    "scripts": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/script-standards.md"
+  },
+  "agent_profile": {
+    "name": "",
+    "title": "Architecte Logiciel",
+    "icon": "🏗️",
+    "agent_type": "memory",
+    "mission": "Transformer une idée de projet Android en un plan d'exécution clair, découpé en phases autonomes que chaque agent peut implémenter — sans jamais écrire une ligne de code."
+  },
+  "capabilities": [
+    { "name": "brainstorm", "kind": "prompt", "note": "Session interactive pour comprendre la vision du projet. Ouvre le dialogue, capture dans brainstorm.md." },
+    { "name": "prd", "kind": "prompt", "note": "Consolide brainstorm.md en PRD structuré (vision, features, user stories, contraintes)." },
+    { "name": "decompose", "kind": "prompt", "note": "Découpe le projet en phases autonomes, crée dossiers et phases-index.md." },
+    { "name": "spec", "kind": "prompt", "note": "Rédige la spec d'une phase au moment de son activation (jamais à l'avance)." },
+    { "name": "replan", "kind": "prompt", "note": "Re-découpe une phase existante quand le périmètre change ou qu'elle est trop grosse." }
+  ],
+  "detailed_analysis": {
+    "leanness": "Capability prompts largely goal-oriented but first-breath.md carries a heavy scripted question bank (18+ questions in 4 categories); three prompts use numbered lists for independent items; CREED template repeats constraints across 4 sections.",
+    "architecture": "Bootloader exceeds ~400t guardrail (1131t) with leaked sanctum content; Sacred Truth duplicated verbatim in bootloader and CREED template; Three Laws absent from CREED; empty capabilities/ directory.",
+    "determinism": "3 determinism leaks (token counting asked of LLM in 3 places, date-based session log pruning, placeholder regex scanning); 0 intelligence leaks in scripts.",
+    "customization": "Memory agent — about right. Metadata-only customize.toml with empty name (First-Breath-named). No override surface. No other config mechanism.",
+    "enhancement": "Missing critical paths: no divergent ideation for visionless users, no quickplan for experts, no rescope for full pivots, no existing-codebase audit. Sacred Truth duplicated (200t waste). Prompt-quality-canon is wrong-genre for a spec-writing agent.",
+    "agent-cohesion": "Tight persona-capability alignment. Gaps: no formal validation capability for cross-phase consistency, no workspace initialization as a distinct step. Decompose/replan boundary could blur over time.",
+    "sanctum-architecture": "Structurally complete — all 6 templates exist and seeded. First Breath question count (15+) exceeds configuration-style guidance (3-7). Bootloader carries persona-level directives that belong in sanctum."
+  },
+  "sanctum": {
+    "present": true,
+    "location": "{project-root}/_bmad/memory/masb-agent-architecte/",
+    "files": ["INDEX.md", "PERSONA.md", "CREED.md", "BOND.md", "MEMORY.md", "CAPABILITIES.md"],
+    "note": "Sanctum is the built agent's runtime memory, distinct from the builder's .memlog.md in references/. All 6 standard templates exist and carry meaningful seeds. init-sanctum.py's template list matches shipped assets."
+  },
+  "experience": {
+    "journeys": [
+      { "name": "First Breath (birth)", "steps": "init-sanctum.py scaffolds → warm greeting → 4-category discovery (projet, style, phases, expertise) → name selection → capability intro → tools → save-all → birthday ceremony" },
+      { "name": "Brainstorm → PRD → Decompose → Spec", "steps": "User with project idea → brainstorm (open floor) → prd (consolidation → validation HITL) → decompose (phases-index + directories → validation HITL) → activate phase → spec (HITL) → handoff to Research" },
+      { "name": "Replan (mid-phase pivot)", "steps": "User says phase scope changed → replan reads current spec + progress → proposes re-cut → validates HITL → updates spec.md + phases-index.md" },
+      { "name": "Waking (returning user)", "steps": "wake.py loads sanctum → Become yourself → Bind standing rules → Waking Mode: callback from MEMORY → offer capabilities" }
+    ],
+    "headless": "No headless mode. All capabilities require HITL validation per CREED boundaries. This is correct for the architecte's design — the persona is interactive by nature."
+  },
+  "themes": [
+    {
+      "title": "Bootloader bloat and identity duplication",
+      "root_cause": "SKILL.md carries sanctum-bound content (full Three Laws, Sacred Truth, Stay in Character, Persistent Memory narrative) at 1131 tokens when ~400 is the guardrail for a memory bootloader. The Sacred Truth is duplicated verbatim across SKILL.md and CREED-template.md (~200 tokens of identical text loaded every session). The Three Laws exist only in the bootloader — they vanish from the agent's identity after First Breath when the sanctum becomes the primary identity source.",
+      "finding_ids": ["architecture-1", "architecture-2", "architecture-3", "sanctum-1", "enhancement-4", "enhancement-10"],
+      "action": "Strip sanctum-bound content from SKILL.md: move Stay in Character and Persistent Memory narrative to PERSONA-template.md and CREED-template.md respectively. Keep only identity seed (2-3 sentences), short-form Three Laws, short-form Sacred Truth, and the activation spine. Add Three Laws section to CREED-template.md so they persist in sanctum. Deduplicate Sacred Truth — canonical copy in CREED-template.md, one-liner reference in SKILL.md."
+    },
+    {
+      "title": "Scripted discovery contradicts the agent's own canon",
+      "root_cause": "The agent ships prompt-quality-canon.md which teaches 'write the destination, not the route' and 'a script is your imagined transcript of one good session.' Yet first-breath.md contains 18+ questions in 4 rigid categories, decompose.md has a numbered list of independent rules, spec.md numbers 8 independent document sections, and prd.md templates standard PRD structure any model already knows. The canon's own tests would flag most of its agent's capability prompts as ceremony.",
+      "finding_ids": ["leanness-1", "leanness-2", "leanness-3", "leanness-4", "leanness-7", "enhancement-12"],
+      "action": "Replace numbered lists and question banks with outcome-stated goals throughout. First-breath.md: replace 18 questions with 'discover naturally: their project, working style, phase preferences, expertise, name, and tools.' Decompose.md: replace numbered rules with one goal sentence. Spec.md: collapse 8-numbered sections. Prd.md: remove section template — the consumer definition alone does the work."
+    },
+    {
+      "title": "Deterministic work leaks into prompts",
+      "root_cause": "Three operations that only a script can do reliably are delegated to the LLM: token counting ('stay under 1500 tokens' across 3 locations), date-based file pruning ('delete sessions older than 14 days'), and regex pattern scanning ('find remaining {placeholder} tokens'). A fourth borderline case asks the LLM to validate folder naming conventions it just created. These cost tokens on every relevant invocation and produce unreliable results.",
+      "finding_ids": ["determinism-1", "determinism-2", "determinism-3", "determinism-4"],
+      "action": "Script token measurement into wake.py (output current MEMORY.md token count on load). Add a prune-sessions.py script that handles date comparison and stale-file removal. Script the placeholder scan into init-sanctum.py or a validate-sanctum.py post-pass. For folder-structure validation, add a validate-phases.py script called after decompose."
+    },
+    {
+      "title": "No fallback paths for divergent user archetypes",
+      "root_cause": "All five capabilities assume a linear, structured planning process starting from a concrete project idea. Three user archetypes have no path: the visionless user with only a vague desire (needs divergent ideation before structured questions), the expert who wants a rough plan fast (needs a quickplan exit ramp that skips PRD and full specs), and the returning user whose project has fully pivoted (needs rescope capability instead of piecemeal replan). A fourth gap is the user with existing Android code (needs audit capability).",
+      "finding_ids": ["enhancement-1", "enhancement-2", "enhancement-5", "enhancement-7", "enhancement-8", "agent-cohesion-2", "enhancement-9", "agent-cohesion-1"],
+      "action": "Add: ideate capability (divergent exploration → lightweight output), quickplan capability (3-5 phase outline, no PRD/spec overhead), rescope capability (archive current plan → fresh brainstorm), audit capability (read existing project → gap analysis), validate capability (cross-phase consistency check), and initialize-workspace as an explicit step in brainstorm."
+    },
+    {
+      "title": "Prompt-quality-canon is the wrong reference for a spec-writing agent",
+      "root_cause": "The agent carries prompt-quality-canon.md and references it from CREED.md's 'Author to the standard' standing order. But the agent writes specs and plans, not prompts — its five capabilities are static .md files. The canon's advice on 'outcome vs prescription,' 'number-only-true-sequences,' and 'carve by relevance' is genuinely useful for spec writing, but the framing (prompts, models, invocations) confuses the genre. The 1652-token file loads every session even though the standing order fires 'only at the moment a capability is authored or refined.'",
+      "finding_ids": ["enhancement-3", "agent-cohesion-4"],
+      "action": "Replace prompt-quality-canon.md with a spec-quality-canon.md that mirrors the same principles (outcome over process, consumer defines the bar, carve by relevance) framed for specification writing. Or remove the canon entirely — the CREED's 'Ne jamais deviner' and the 'le curseur' lines in each capability already set a clear bar. At minimum, stop loading it on every session: move the standing order to fire only on replan."
+    }
+  ],
+  "strengths": [
+    "Persona-capability alignment is excellent — the 'architecte qui ne code pas' is consistently enforced across all 5 capabilities, CREED boundaries, and the activation spine.",
+    "Capability chain (brainstorm → prd → decompose → spec → replan) forms a clean linear journey with clear handoffs and HITL validation at each gate.",
+    "Sanctum architecture is structurally complete: all 6 standard templates exist, carry meaningful domain-specific seeds, and init-sanctum.py's template list matches shipped assets.",
+    "Customization surface is correctly lean for a memory agent — metadata-only customize.toml with empty name for First Breath naming, no override surface, no other config mechanism.",
+    "Activation spine is sound: wake.py → become yourself → bind standing rules → proper mode. First Breath routes correctly to init-sanctum.py + conversational awakening.",
+    "Domain-adapted CREED with concrete Android project values, standing orders, and anti-patterns. The 'zero code' boundary is a clear, enforced behavioral rule.",
+    "The persona was treated as investment throughout build and analysis and was never flagged as waste — voice, warmth, and communication style are preserved.",
+    "The 'le curseur' pattern in each capability prompt (a single line naming the failure mode to guard against) is an elegant application of the canon's scarred-rule principle."
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "action": "Trim SKILL.md bootloader: strip Stay in Character and Persistent Memory narrative to PERSONA/CREED templates; deduplicate Sacred Truth (canonical copy in CREED-template.md, one-liner in SKILL.md); add Three Laws to CREED-template.md.",
+      "resolves": ["architecture-1", "architecture-2", "architecture-3", "sanctum-1", "enhancement-4", "enhancement-10", "leanness-6"]
+    },
+    {
+      "rank": 2,
+      "action": "Replace numbered lists and question banks with outcome-stated goals across first-breath.md, decompose.md, spec.md, prd.md, and brainstorm.md per the canon the agent already ships.",
+      "resolves": ["leanness-1", "leanness-2", "leanness-3", "leanness-4", "leanness-7", "enhancement-12"]
+    },
+    {
+      "rank": 3,
+      "action": "Script token counting, date-based pruning, and placeholder scanning into wake.py, prune-sessions.py, and validate-sanctum.py respectively. Add validate-phases.py for folder-structure validation after decompose.",
+      "resolves": ["determinism-1", "determinism-2", "determinism-3", "determinism-4"]
+    },
+    {
+      "rank": 4,
+      "action": "Add ideate, quickplan, rescope, and audit capabilities to cover divergent user archetypes. Add validate for cross-phase consistency checking. Make workspace initialization an explicit step.",
+      "resolves": ["enhancement-1", "enhancement-2", "enhancement-5", "enhancement-7", "enhancement-8", "agent-cohesion-1", "agent-cohesion-2", "enhancement-9"]
+    },
+    {
+      "rank": 5,
+      "action": "Replace prompt-quality-canon.md with spec-quality-canon.md framed for specification writing, or remove it entirely since CREED boundaries already set the bar.",
+      "resolves": ["enhancement-3", "agent-cohesion-4"]
+    },
+    {
+      "rank": 6,
+      "action": "Add non-Android guardrail to brainstorm and make phase-00 assignment configurable rather than hardcoded.",
+      "resolves": ["enhancement-11", "agent-cohesion-5", "enhancement-14"]
+    }
+  ],
+  "findings": [
+    {
+      "id": "enhancement-1",
+      "lens": "enhancement",
+      "severity": "critical",
+      "title": "add: divergent ideation mode for users with no clear vision",
+      "location": "SKILL.md:53-60 (On Activation)",
+      "evidence": "All four capabilities assume a concrete project exists. A user with only a vague desire gets forced into structured questions. First-timer archetype: overwhelming.",
+      "recommendation": "Add an `ideate` capability parallel to `brainstorm` that opens with open-floor divergent exploration before any structured output. Route to it when the user's input shows no concrete project."
+    },
+    {
+      "id": "enhancement-2",
+      "lens": "enhancement",
+      "severity": "critical",
+      "title": "add: minimum-viable-plan exit ramp for expert users",
+      "location": "references/decompose.md:17-23",
+      "evidence": "The full decompose flow (brainstorm -> PRD -> phases -> specs) is mandatory per CREED boundaries. An expert who wants a rough plan fast has no path.",
+      "recommendation": "Add a `quickplan` capability that produces a single-page outline (3-5 phases, no PRD, no per-phase spec) when the user explicitly requests speed. Full flow stays default."
+    },
+    {
+      "id": "leanness-1",
+      "lens": "leanness",
+      "severity": "high",
+      "title": "first-breath.md: scripted interview replaces adaptive discovery",
+      "location": "references/first-breath.md:28-76",
+      "evidence": "23 questions organized into 4 themed groups with exact French phrasing. A model told 'by the end you need to discover X, Y, Z' will ask the right questions conversationally.",
+      "recommendation": "Replace question bank with an outcome: 'By the end you must know their project, working style, phase relationship, technical level, name, and available tools — discover these naturally.'"
+    },
+    {
+      "id": "architecture-1",
+      "lens": "architecture",
+      "severity": "high",
+      "title": "Bootloader exceeds guardrail by 2.8x with leaked identity content",
+      "location": "SKILL.md:1-60",
+      "evidence": "SKILL.md is 1131 tokens vs ~400 token guardrail for memory agent bootloaders. Three Laws, Sacred Truth, Stay in Character are sanctum-bound content.",
+      "recommendation": "Strip the Three Laws, Sacred Truth, Stay in Character from SKILL.md. Keep only activation sequence and Conventions (~400 tokens)."
+    },
+    {
+      "id": "determinism-1",
+      "lens": "determinism",
+      "severity": "high",
+      "title": "Token counting delegated to LLM across memory guidance and templates",
+      "location": "references/memory-guidance.md:58,87 + assets/MEMORY-template.md:7",
+      "evidence": "\"aiming to stay near or under roughly 1500 tokens\" in 3 separate instances — LLMs cannot count tokens reliably.",
+      "recommendation": "Add token measurement to wake.py that outputs current MEMORY.md token count on load so the LLM knows exact usage."
+    },
+    {
+      "id": "determinism-2",
+      "lens": "determinism",
+      "severity": "high",
+      "title": "Date-based session log pruning asked of LLM",
+      "location": "references/memory-guidance.md:56",
+      "evidence": "\"prune session logs older than 14 days\" — asks the LLM to do date comparison, a deterministic operation.",
+      "recommendation": "Add a prune-sessions.py script that handles date comparison and reports result to the LLM."
+    },
+    {
+      "id": "enhancement-3",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "remove: Prompt Quality Canon is wrong-genre reference for a spec-writing agent",
+      "location": "references/prompt-quality-canon.md",
+      "evidence": "The canon teaches prompt authoring; this agent writes specs and plans. The 1652-token file loads every session via the CREED standing order.",
+      "recommendation": "Replace with a spec-quality-canon.md or remove entirely. At minimum, move the standing order to fire only on replan, not every session."
+    },
+    {
+      "id": "enhancement-4",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "remove: Sacred Truth duplicated verbatim across SKILL.md and CREED-template.md",
+      "location": "SKILL.md:20-23 and assets/CREED-template.md:3-9",
+      "evidence": "Near-verbatim ~200 token block appears in both files, loaded on every session.",
+      "recommendation": "Keep shorter version in SKILL.md; replace CREED.md's copy with a one-line reference: 'See The Sacred Truth in SKILL.md.'"
+    },
+    {
+      "id": "enhancement-5",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "add: rescope capability for full project pivots",
+      "location": "references/replan.md:1-28",
+      "evidence": "replan handles re-cutting a phase but not a full pivot. A returning user who changed their project direction has no clean reset path.",
+      "recommendation": "Add a `rescope` capability that archives the current plan, clears active phase statuses, and starts a fresh brainstorm cycle."
+    },
+    {
+      "id": "enhancement-6",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "remove: empty capabilities/ directory causes confusion",
+      "location": "capabilities/",
+      "evidence": "Empty directory with no .gitkeep or README. All capabilities are in references/. Signals either bug or unimplemented feature.",
+      "recommendation": "Remove the empty capabilities/ directory and route all discovery through references/ only."
+    },
+    {
+      "id": "architecture-2",
+      "lens": "architecture",
+      "severity": "medium",
+      "title": "Sacred Truth duplicated verbatim in bootloader and CREED template",
+      "location": "SKILL.md:19-23 / CREED-template.md:3-9",
+      "evidence": "109-word Sacred Truth passage appears identically in both files with minor edits, already drifting out of sync.",
+      "recommendation": "Keep Sacred Truth in CREED-template.md only. Replace in SKILL.md with one-liner reference."
+    },
+    {
+      "id": "architecture-3",
+      "lens": "architecture",
+      "severity": "medium",
+      "title": "Three Laws defined in bootloader but absent from CREED template",
+      "location": "SKILL.md:9-17 vs CREED-template.md",
+      "evidence": "Three Laws present only in bootloader — absent from CREED. After First Breath, sanctum becomes identity source and the Laws vanish.",
+      "recommendation": "Add Three Laws to CREED-template.md. Keep short reference in SKILL.md."
+    },
+    {
+      "id": "architecture-4",
+      "lens": "architecture",
+      "severity": "medium",
+      "title": "Empty capabilities/ directory",
+      "location": "capabilities/",
+      "evidence": "Root-level capabilities/ directory exists but is empty. All capability logic is in references/.",
+      "recommendation": "Remove the directory or add a .gitkeep with explanatory comment."
+    },
+    {
+      "id": "leanness-2",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "decompose.md: numbered list of independent rules masquerading as sequence",
+      "location": "references/decompose.md:17-23",
+      "evidence": "7 rules in a numbered list. These are independent obligations, not sequential steps.",
+      "recommendation": "Replace with a single goal sentence describing domain conventions."
+    },
+    {
+      "id": "leanness-3",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "spec.md: numbered section template disguises independent sections as sequence",
+      "location": "references/spec.md:17-25",
+      "evidence": "8 section headings numbered. These are independent document sections, not sequential steps.",
+      "recommendation": "Collapse to one sentence describing what to cover."
+    },
+    {
+      "id": "leanness-6",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "CREED-template: same constraints repeated across four sections",
+      "location": "assets/CREED-template.md:15-63",
+      "evidence": "\"no code\" appears in Core Values and Boundaries. \"User validates\" appears in Core Values, Standing Orders, Boundaries, and Anti-Patterns. Four sections covering same 5-6 rules.",
+      "recommendation": "Merge Standing Orders and Boundaries. Fold Anti-Patterns Behavioral into a short note. Remove Anti-Patterns Operational."
+    },
+    {
+      "id": "determinism-3",
+      "lens": "determinism",
+      "severity": "medium",
+      "title": "Placeholder pattern scanning assigned to LLM during First Breath",
+      "location": "references/first-breath.md:96",
+      "evidence": "\"scan sanctum files for remaining {...} placeholder instructions\" — regex pattern matching asked of the LLM.",
+      "recommendation": "Script the placeholder scan into init-sanctum.py or a validate-sanctum.py post-pass."
+    },
+    {
+      "id": "agent-cohesion-1",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "No formal validation or consistency-check capability",
+      "location": "SKILL.md references/ and all capability files",
+      "evidence": "No capability to systematically check cross-phase consistency: do dependencies resolve? Are all PRD features mapped?",
+      "recommendation": "Add a `validate` capability that scans all project artifacts for consistency gaps."
+    },
+    {
+      "id": "agent-cohesion-2",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "Workspace initialization is implicit, not a capability",
+      "location": "references/brainstorm.md",
+      "evidence": "Init responsibility 'Créer masb-workspace/' is not handled by any capability. brainstorm.md doesn't ensure workspace exists.",
+      "recommendation": "Add workspace scaffolding to brainstorm or introduce a lightweight init capability."
+    },
+    {
+      "id": "sanctum-1",
+      "lens": "sanctum-architecture",
+      "severity": "medium",
+      "title": "SKILL.md bootloader exceeds ~400 token guardrail at 1131 tokens",
+      "location": "SKILL.md:1-60",
+      "evidence": "1131 tokens vs ~400 guardrail. Includes persona-level directives (Stay in Character) that belong in sanctum.",
+      "recommendation": "Move Stay in Character and Persistent Memory narrative into PERSONA and CREED templates."
+    },
+    {
+      "id": "enhancement-7",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "add: lightweight mode for trivial projects",
+      "location": "references/decompose.md:21",
+      "evidence": "A single-screen utility does not need design system phase or multi-phase decomposition. Rules calibrated for medium-to-large apps.",
+      "recommendation": "Add a project-size classifier in brainstorm. Route to lightweight (single phase) or standard flow."
+    },
+    {
+      "id": "enhancement-8",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "add: existing-codebase analysis capability",
+      "location": "SKILL.md:60",
+      "evidence": "No capability for users with an existing Android project. Assumes greenfield.",
+      "recommendation": "Add an `audit` capability that reads existing project structure and produces gap analysis."
+    },
+    {
+      "id": "enhancement-9",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "add: progress visibility and status summary capability",
+      "location": "references/decompose.md:13",
+      "evidence": "Only status artifact is phases-index.md. No capability summarizes what's done, blocked, or next.",
+      "recommendation": "Add a `status` capability that reads phases-index.md + all progress.md files and produces a concise project dashboard."
+    },
+    {
+      "id": "sanctum-2",
+      "lens": "sanctum-architecture",
+      "severity": "low",
+      "title": "First Breath discovery question count exceeds 3-7 recommendation",
+      "location": "references/first-breath.md:38-60",
+      "evidence": "~15 individual discovery questions across 4 categories, exceeding the 3-7 guidance for configuration-style First Breath.",
+      "recommendation": "Consolidate to 5-7 highest-value questions. Keep category headers as guidance, reduce explicit question list."
+    },
+    {
+      "id": "architecture-5",
+      "lens": "architecture",
+      "severity": "low",
+      "title": "Frontmatter description mixes French and English",
+      "location": "SKILL.md:3",
+      "evidence": "Role description is French, trigger phrase is English. Inconsistent with entirely French capability descriptions.",
+      "recommendation": "Normalize to all-French or match the agent's predominant language."
+    },
+    {
+      "id": "determinism-4",
+      "lens": "determinism",
+      "severity": "low",
+      "title": "Structural validation rules embedded in decompose prompt",
+      "location": "references/decompose.md:17-23",
+      "evidence": "Naming conventions and folder structure rules that the LLM must both create and validate — validation side is deterministic.",
+      "recommendation": "After decompose creates structure, run a validate-phases.py that checks patterns and required files."
+    },
+    {
+      "id": "leanness-4",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "prd.md: section template re-teaches standard PRD structure",
+      "location": "references/prd.md:17-24",
+      "evidence": "7-section PRD template. Any capable model knows PRD structure — the consumer definition alone does the work.",
+      "recommendation": "Remove the section template. Let the consumer definition carry the bar."
+    },
+    {
+      "id": "leanness-5",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "brainstorm.md: persona restated in capability prompt",
+      "location": "references/brainstorm.md:9-10",
+      "evidence": "\"Tu es l'architecte logiciel... Tu ne codes pas\" — persona already inherited from bootloader and sanctum.",
+      "recommendation": "Remove lines 9-10. Start at 'Ouvre le dialogue avec une invitation large.'"
+    },
+    {
+      "id": "leanness-7",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "memory-guidance.md: session log format template teaches markdown",
+      "location": "references/memory-guidance.md:41-53",
+      "evidence": "Formatted markdown template for session log entries. Model already writes markdown fluently.",
+      "recommendation": "Collapse format template to one line describing convention."
+    },
+    {
+      "id": "agent-cohesion-3",
+      "lens": "agent-cohesion",
+      "severity": "low",
+      "title": "decompose and replan share overlapping mechanics",
+      "location": "references/decompose.md vs references/replan.md",
+      "evidence": "Both write to phases-index.md and create directories. Boundary could blur as agent evolves.",
+      "recommendation": "Document the boundary more sharply or unify into a single decompose with initial/replan mode."
+    },
+    {
+      "id": "agent-cohesion-4",
+      "lens": "agent-cohesion",
+      "severity": "low",
+      "title": "prompt-quality-canon excluded from sanctum but referenced by CREED",
+      "location": "scripts/init-sanctum.py:12 and assets/CREED-template.md:36-37",
+      "evidence": "init-sanctum.py lists canon in SKILL_ONLY_FILES (not copied to sanctum). CREED references it from skill root.",
+      "recommendation": "Either copy canon to sanctum or add a check noting its path for non-standard invocations."
+    },
+    {
+      "id": "agent-cohesion-5",
+      "lens": "agent-cohesion",
+      "severity": "low",
+      "title": "Phase 00 hardcoded as 'always design system' limits modularity",
+      "location": "references/decompose.md:21",
+      "evidence": "Hardcoded rule makes agent less reusable outside MASB. Projects without UI needs still get phase 00.",
+      "recommendation": "Make phase-00 assignment configurable with MASB default."
+    },
+    {
+      "id": "enhancement-10",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "remove: The Three Laws framing adds ceremony without enforceable value",
+      "location": "SKILL.md:9-15",
+      "evidence": "6-line Asimov-style laws. 'Never cause harm' and 'Obey' already enforced by base model training. Only 'preserve yourself' (sanctum protection) is genuinely useful.",
+      "recommendation": "Replace with single line: 'Your sanctum is your continuity. Protect it.' Move owner-obedience to CREED Boundaries."
+    },
+    {
+      "id": "enhancement-11",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "add: non-Android guard or multi-platform extension point",
+      "location": "SKILL.md:1-4",
+      "evidence": "Branded Android-only. A user asking for iOS/web/Flutter gets no guardrail.",
+      "recommendation": "Add a platform check in brainstorm, or generalize architecture principles."
+    },
+    {
+      "id": "enhancement-12",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "remove: discovery question list is over-structured per agent's own canon",
+      "location": "references/first-breath.md:36-60",
+      "evidence": "18+ questions in 5 categories IS the script the prompt-quality-canon warns against.",
+      "recommendation": "Replace question categories with outcome-stated goals."
+    },
+    {
+      "id": "enhancement-13",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "add: --dry-run or --just-status flag for wake.py",
+      "location": "scripts/wake.py:30-32",
+      "evidence": "No lightweight mode. Every waking loads all 6 identity files.",
+      "recommendation": "Add a --status flag that prints only MEMORY.md + one-liner summary."
+    },
+    {
+      "id": "enhancement-14",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "add: capture-don't-interrupt posture in brainstorm.md",
+      "location": "references/brainstorm.md:13",
+      "evidence": "Save-as-you-go could interrupt user's stream if agent saves mid-sentence.",
+      "recommendation": "Add explicit guidance: save only at natural pauses, not mid-stream."
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "lens": "determinism",
+  "verdict": "3 determinism leaks: validate-gate is a pure extraction prompt (high), merge-phase runs deterministic gates before judgment (medium), create-branch extracts phase metadata (medium)",
+  "findings": [
+    {
+      "id": "determinism-1",
+      "severity": "high",
+      "title": "validate-gate capability is entirely deterministic extraction",
+      "location": "references/validate-gate.md:15-18",
+      "evidence": "The entire prompt is: 'Read progress.md. Parse for: review-passed: true/false and tests-passed: true/false. Report each gate's status. If false, list the exact blocker from review-report.md or test-report.md.' Every instruction matches signal-verbs 'parse', 'validate', and 'list' with no judgment component — the model is doing regex extraction of boolean fields and structured file reads. Same input always yields same output (determinism test: yes; unit test: yes; meaning/context required: no).",
+      "recommendation": "Determinism leak — push to script. Write scripts/validate-gate.py that reads progress.md, extracts the two boolean fields via regex, optionally reads the blocker reports, and emits compact JSON ({phase, review_passed, tests_passed, blockers}). The prompt then consumes the JSON and makes the final merge-readiness judgment call, which is where the model's interpretation earns its place."
+    },
+    {
+      "id": "determinism-2",
+      "severity": "medium",
+      "title": "merge-phase gate checks are deterministic pre-work before the merge judgment",
+      "location": "references/merge-phase.md:15-18",
+      "evidence": "Three sequential gates before the merge decision: (1) 'Read phases-index.md to confirm this phase is next in sequence' — cross-referencing phase name against a file index, (2) 'Read progress.md and verify that review-passed: true', (3) 'verify that tests-passed: true'. Gates 1-3 are all deterministic: same files always produce the same ordering answer and boolean check. Only the subsequent squash-vs-merge-commit choice and conflict notification are judgment work.",
+      "recommendation": "Determinism leak — push gates to a script. A pre-pass script (shared with validate-gate) should read phases-index.md and progress.md and emit {phase_name, is_next_in_sequence, review_passed, tests_passed} as JSON. The prompt then imports this JSON and applies merge judgment (deciding merge strategy, handling conflicts) on top."
+    },
+    {
+      "id": "determinism-3",
+      "severity": "medium",
+      "title": "create-branch extracts phase metadata from phases-index.md",
+      "location": "references/create-branch.md:13-15",
+      "evidence": "Instruction: 'Read phases-index.md at {project-root}/masb-workspace/phases-index.md to determine the phase number and whether this phase depends on another.' The model must parse a markdown file to extract structured fields (phase number N, dependencies). Same phases-index.md always yields the same metadata — this is extraction, not interpretation. The branch name template 'phase/N-nom-de-phase' is then assembled from the extracted data.",
+      "recommendation": "Determinism leak — push to pre-pass script. Write or reuse a script that reads phases-index.md, extracts each phase's number, name, and dependencies as JSON, and hands the model {phase_number, phase_name, depends_on, branch_name_candidate}. The model then applies judgment about branch naming edge cases or user overrides rather than doing raw extraction from markdown."
+    }
+  ]
+}

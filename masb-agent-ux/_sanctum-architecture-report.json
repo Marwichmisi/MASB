@@ -1,0 +1,22 @@
+{
+  "lens": "sanctum-architecture",
+  "verdict": "Complete and seeded — all 6 templates present with meaningful seeds, MEMORY empty, scripts correct, First Breath comprehensive. Two issues: substitution mismatch in CREED DOMINION paths, and builder .memlog.md leaks into sanctum.",
+  "findings": [
+    {
+      "id": "sanctum-1",
+      "severity": "medium",
+      "title": "{project-root} placeholder substitution mismatch in CREED-template.md DOMINION section",
+      "location": "assets/CREED-template.md:65-78 + scripts/init-sanctum.py:216-222",
+      "evidence": "CREED-template.md uses `{project-root}` (hyphen, 7 occurrences) but init-sanctum.py provides only `project_root` (underscore) in its variables dict. After scaffolding, the rendered CREED.md will contain literal `{project-root}` strings instead of actual paths. Meanwhile `{sanctum_path}` on line 72 uses underscore and substitutes correctly — the mismatch is partial.",
+      "recommendation": "Either change template to use `{project_root}` (underscore) to match the variable, or add a second entry `\"project-root\": str(project_root)` to the variables dict in init-sanctum.py."
+    },
+    {
+      "id": "sanctum-2",
+      "severity": "low",
+      "title": ".memlog.md (builder artifact) leaks into sanctum runtime memory",
+      "location": "references/.memlog.md + scripts/init-sanctum.py:82-94 (copy_references)",
+      "evidence": "`.memlog.md` lives inside references/ and will be copied into the sanctum by `copy_references()`. SKILL_ONLY_FILES does not filter dotfiles, and `pathlib.Path.iterdir()` does enumerate them. This seeds the agent's runtime memory with builder trace data.",
+      "recommendation": "Add \".memlog.md\" to SKILL_ONLY_FILES, or add a glob filter in copy_references to skip dotfiles."
+    }
+  ]
+}

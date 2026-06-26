@@ -1,0 +1,224 @@
+{
+  "schema_version": 2,
+  "subject": "masb-agent-developpeur",
+  "generated": "2026-06-26",
+  "verdict": "Poor — critical TOML syntax error makes the sole config surface unparseable; bootloader leaks sanctum-bound content at 2.8x the guardrail; rich persona treated as investment, not waste.",
+  "grade": "poor",
+  "summary": "L'agent a une base solide (persona cohérente, sanctum complet, capabilities fonctionnelles) mais souffre d'un défaut TOML critique et d'une fuite de contenu du bootloader vers le sanctum. Les capability prompts sont légèrement sur-prescriptives mais le cœur du contenu est utile.",
+  "themes": [
+    {
+      "title": "Bootloader overweight with sanctum-bound content",
+      "root_cause": "SKILL.md carries 1133 tokens (~2.8x the ~400 token guardrail for memory bootloaders) because persona voice, detailed Waking Mode behavioral guidance, and capability routing detail leaked into the bootloader instead of living in the sanctum (PERSONA.md, CAPABILITIES.md). This inflates every activation and duplicates content that should live in one place.",
+      "finding_ids": ["architecture-1", "agent-cohesion-1", "sanctum-1"],
+      "action": "Move persona voice/communication style to PERSONA-template.md. Trim Waking Mode to routing-only. Prune capability enumeration from frontmatter description. Target ~400 tokens."
+    },
+    {
+      "title": "Capability prompts carry ceremony and defensive padding",
+      "root_cause": "All three capability prompts (implement, compile-check, auto-fix) have numbered steps that force sequential execution where the model would reach the same outcome without instruction, plus 'Express path' sections that describe what the model would do anyway. The CREED template also has a formatting defect (literal \\n).",
+      "finding_ids": ["leanness-1", "leanness-2", "leanness-4", "leanness-5", "sanctum-2"],
+      "action": "Collapse numbered sequences to goal sentences. Remove Express path blocks from all three capabilities. Fix CREED-template.md \\n formatting."
+    },
+    {
+      "title": "Developer workflow incomplete — missing dependency management and compile-fix pipeline",
+      "root_cause": "The implement → compile-check → auto-fix loop requires manual orchestration. Dependency management is explicitly excluded (escalated as 'complex error'). No single-shot pipeline chains the three capabilities end-to-end for expert users.",
+      "finding_ids": ["agent-cohesion-2", "enhancement-2"],
+      "action": "Add a compile-fix pipeline capability (CFL) that chains implement → compile → auto-fix → recompile → report. Add a manage-dependency capability or expand auto-fix for dependency resolution."
+    },
+    {
+      "title": "Sanctum self-containment broken for runtime dependencies",
+      "root_cause": "memory-guidance.md and prompt-quality-canon.md are in SKILL_ONLY_FILES and never copied to sanctum, yet the agent's CREED standing order and Persistent Memory directive reference them. After init, the agent depends on the skill bundle for normal operation.",
+      "finding_ids": ["enhancement-1"],
+      "action": "Remove memory-guidance.md and prompt-quality-canon.md from SKILL_ONLY_FILES so they're copied to sanctum/references/ during init."
+    }
+  ],
+  "strengths": [
+    "Persona cohérente et reconnaissable — 'Développeur Android expert' se retrouve dans les trois capabilities",
+    "Sanctum structurellement complet — les 6 templates, wake.py et init-sanctum.py sont tous présents avec le bon SKILL_NAME et le bon flag EVOLVABLE",
+    "Capabilities fonctionnelles avec frontmatter valide — auto-découvertes par init-sanctum.py",
+    "First Breath de type configuration avec questions de découverte adaptées au domaine Android",
+    "Standing orders pertinents avec le canon pull-in et les valeurs bien adaptées au domaine",
+    "TOML corrigé et active — le fichier est maintenant parsable et valide",
+    "Persona traitée comme investissement — aucune recommandation de l'aplatir"
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "action": "Fix CREED-template.md literal \\n formatting and restore TOML integrity (already done)",
+      "resolves": ["customization-1", "leanness-3", "sanctum-2"]
+    },
+    {
+      "rank": 2,
+      "action": "Trim SKILL.md bootloader to ~400 tokens: move persona voice to PERSONA-template.md, reduce Waking Mode to routing-only, trim frontmatter description",
+      "resolves": ["architecture-1", "agent-cohesion-1", "sanctum-1"]
+    },
+    {
+      "rank": 3,
+      "action": "Remove memory-guidance.md and prompt-quality-canon.md from SKILL_ONLY_FILES in init-sanctum.py so the sanctum is self-contained (already done)",
+      "resolves": ["enhancement-1"]
+    },
+    {
+      "rank": 4,
+      "action": "Remove Express path blocks from all three capability prompts and collapse numbered sequences to goal sentences",
+      "resolves": ["leanness-1", "leanness-2", "leanness-4", "leanness-5"]
+    },
+    {
+      "rank": 5,
+      "action": "Add compile-fix pipeline capability and dependency management capability",
+      "resolves": ["agent-cohesion-2", "enhancement-2"]
+    }
+  ],
+  "findings": [
+    {
+      "id": "customization-1",
+      "lens": "customization",
+      "severity": "critical",
+      "title": "Invalid TOML syntax in name field — unclosed multi-line string",
+      "location": "customize.toml:13",
+      "evidence": "Field reads `name = \"\"\"\"` (four double quotes). TOML interprets `\"\"\"` as start of multi-line string; no closing `\"\"\"` exists. The entire customize.toml was unparseable. Now fixed to `name = \"\"`.",
+      "recommendation": "Use `name = \"\"` for empty string. Already fixed."
+    },
+    {
+      "id": "architecture-1",
+      "lens": "architecture",
+      "severity": "high",
+      "title": "Sanctum-bound content leaked into overweight bootloader",
+      "location": "SKILL.md:6-8, SKILL.md:65-71",
+      "evidence": "SKILL.md is 1133 tokens vs ~400-token guardrail. Persona voice block and detailed Waking Mode behavioral guidance belong in sanctum (PERSONA.md).",
+      "recommendation": "Move persona voice to PERSONA-template.md. Trim Waking Mode section to routing-only. Target ~400 tokens."
+    },
+    {
+      "id": "enhancement-1",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "Sanctum self-containment broken — runtime dependencies not copied",
+      "location": "scripts/init-sanctum.py:38",
+      "evidence": "memory-guidance.md and prompt-quality-canon.md in SKILL_ONLY_FILES are never copied to sanctum. Agent's CREED and Persistent Memory directive reference them at runtime.",
+      "recommendation": "Remove from SKILL_ONLY_FILES. Already done."
+    },
+    {
+      "id": "sanctum-1",
+      "lens": "sanctum-architecture",
+      "severity": "medium",
+      "title": "Sanctum-bound communication style leaked into bootloader SKILL.md",
+      "location": "SKILL.md:6-8",
+      "evidence": "1133 token bootloader carries full persona voice that belongs in sanctum.",
+      "recommendation": "Move to PERSONA-template.md."
+    },
+    {
+      "id": "sanctum-2",
+      "lens": "sanctum-architecture",
+      "severity": "medium",
+      "title": "Literal \\n sequences in CREED-template.md instead of actual newlines",
+      "location": "CREED-template.md:17,23,35,40",
+      "evidence": "Four sections use literal `\\n` escape sequences — renders as visible `\\n` in markdown.",
+      "recommendation": "Replace \\n with real newlines. Already done."
+    },
+    {
+      "id": "agent-cohesion-1",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "Bootloader SKILL.md leaks sanctum-bound content at 2.8x guardrail",
+      "location": "SKILL.md:6-8, SKILL.md:36-38",
+      "evidence": "1133 tokens vs ~400. Stay in Character section duplicates persona communication style belonging in sanctum.",
+      "recommendation": "Move Stay in Character detail to PERSONA.md."
+    },
+    {
+      "id": "agent-cohesion-2",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "Dependency management is a gap in the developer workflow",
+      "location": "references/implement.md, references/auto-fix.md, assets/CREED-template.md",
+      "evidence": "No capability to add/update dependencies. Auto-fix classifies 'missing dependencies' as complex errors to escalate.",
+      "recommendation": "Add manage-dependency capability or expand auto-fix."
+    },
+    {
+      "id": "enhancement-2",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "No compile-fix pipeline capability for expert/automator flow",
+      "location": "references/implement.md, references/compile-check.md, references/auto-fix.md",
+      "evidence": "Expert must manually loop: implement → compile-check → auto-fix → compile-check. No single-shot pipeline.",
+      "recommendation": "Add pipeline capability CFL that chains implement → compile → auto-fix → recompile → report."
+    },
+    {
+      "id": "enhancement-3",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "{bond-domain-sections} placeholder leaks into generated BOND.md",
+      "location": "assets/BOND-template.md:8",
+      "evidence": "Placeholder not in substitute_vars map — survives as raw literal text in generated BOND.md.",
+      "recommendation": "Replace with comment-style instruction. Already done."
+    },
+    {
+      "id": "determinism-1",
+      "lens": "determinism",
+      "severity": "low",
+      "title": "Prompt instructs model to scan for remaining {\\u2026} placeholders",
+      "location": "references/first-breath.md:73",
+      "evidence": "Instruction 'scanne les fichiers du sanctum pour les instructions {\\u2026} restantes' is a deterministic text-pattern scan the model does once at generation cost.",
+      "recommendation": "Add post-substitution validation to init-sanctum.py to flag remaining placeholders deterministically."
+    },
+    {
+      "id": "leanness-1",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "implement.md numbered sequence over-prescriptive",
+      "location": "references/implement.md:17-33",
+      "evidence": "4 numbered steps force sequential execution. Steps 3-4 are persona knowledge or already in output spec.",
+      "recommendation": "Collapse to goal sentences. Keep only the non-inferable skill-name mapping.",
+      "proposed_smallest": "Implement code from spec, findings, and UI spec. Output to phases/N/code/. Before writing, consult the relevant skill: navigation-3 | camera1-to-camerax | edge-to-edge | adaptive | styles | migrate-xml-views-to-jetpack-compose | appfunctions | verified-email | jetpack-compose-m3 | display-glasses-with-jetpack-compose-glimmer | play-billing-library-version-upgrade | engage-sdk-integration. Never invent an API.",
+      "predicted_delta": "Near-zero."
+    },
+    {
+      "id": "leanness-2",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "Express path blocks in all 3 capability prompts are defensive padding",
+      "location": "references/implement.md:35, references/compile-check.md:22, references/auto-fix.md:26",
+      "evidence": "Each capability carries an Express path describing default behavior the model would do anyway.",
+      "recommendation": "Delete all three Express path sections."
+    },
+    {
+      "id": "leanness-3",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "CREED-template.md uses literal \\n instead of actual line breaks",
+      "location": "assets/CREED-template.md:17,23,35,40",
+      "evidence": "Four bullet-list sections contain literal \\n characters.",
+      "recommendation": "Replace with real newlines. Already done.",
+      "proposed_smallest": null,
+      "predicted_delta": null
+    },
+    {
+      "id": "leanness-4",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "compile-check.md full version barely beats its absence",
+      "location": "references/compile-check.md:9-24",
+      "evidence": "24 lines / 174 tokens — only the build command and progress.md convention are non-inferable.",
+      "recommendation": "Collapse to: 'Run ./gradlew assembleDebug. On success, update progress.md. On failure, capture logs. Never claim it compiles without running the build.'",
+      "proposed_smallest": "Run ./gradlew assembleDebug. On success, update progress.md. On failure, capture logs. Never claim it compiles without running the build.",
+      "predicted_delta": "Near-zero."
+    },
+    {
+      "id": "leanness-5",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "auto-fix.md express path and process scaffolding are removable",
+      "location": "references/auto-fix.md:9-28",
+      "evidence": "5-step numbered process can collapse. Only non-inferable content is simple-vs-complex classification boundary and escalation format.",
+      "recommendation": "Keep classification rule with examples, escalation path, non-negotiable. Drop numbered scaffolding and express path.",
+      "proposed_smallest": "Fix simple compile errors (missing imports, wrong signatures, typos, resource references, wrong parameters). Complex errors (architecture, API incompatibility, missing deps, ambiguous) write to progress.md as blocked: compile. Never apply a fix you don't understand.",
+      "predicted_delta": "Small."
+    },
+    {
+      "id": "customization-2",
+      "lens": "customization",
+      "severity": "low",
+      "title": "name and title lack read-only-at-runtime comments",
+      "location": "customize.toml:13-14",
+      "evidence": "No comment noting these are install-time roster metadata, not runtime overrides.",
+      "recommendation": "Add inline comments: `name = \"\"  # read-only at runtime` and `title = \"..."
+    }
+  ]
+}

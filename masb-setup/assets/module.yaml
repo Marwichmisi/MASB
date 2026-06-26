@@ -1,0 +1,73 @@
+code: masb
+name: "Marwane Android Spec Builder"
+description: "Framework de développement guidé par l'IA pour la création d'applications mobiles Android"
+module_version: 1.0.0
+default_selected: false
+module_greeting: >
+  MASB est installé et prêt ! 🚀
+
+  Pour commencer, activez l'agent **Architecte** (`masb-agent-architecte`) pour brainstormer votre projet Android.
+  Il vous guidera dans la décomposition de votre idée en phases, la rédaction des specs, et le lancement du workflow.
+
+  Commandes disponibles :
+    - `masb status`  → Afficher l'état d'avancement du projet
+    - `masb help`    → Afficher l'aide du module
+
+agents:
+  - code: agent-architecte
+    name: ""
+    title: "Architecte Logiciel"
+    icon: "\U0001F3D7\uFE0F"
+    description: "Architecte logiciel qui décompose les projets Android en phases et rédige des specs validées."
+  - code: agent-research
+    name: ""
+    title: "Expert en Veille Technique"
+    icon: "\U0001F50D"
+    description: "Expert en veille technique Android qui recherche les patterns, APIs et bonnes pratiques officiels pour chaque phase."
+  - code: agent-ux
+    name: ""
+    title: "UI/UX Designer"
+    icon: "\U0001F3A8"
+    description: "Designer UI/UX spécialiste Material Design. Design system global + déclinaison UI par phase."
+  - code: agent-developpeur
+    name: ""
+    title: "Développeur Android"
+    icon: "\U0001F4BB"
+    description: "Développeur Android expert qui implémente du code à partir de specs et patterns validés."
+  - code: agent-reviewer
+    name: ""
+    title: "Reviewer"
+    icon: "\U0001F50D"
+    description: "Reviewer de code Android spécialisé en sécurité et performance."
+  - code: agent-testeur
+    name: ""
+    title: "Testeur Android"
+    icon: "\U0001F9EA"
+    description: "QA engineer Android rigoureux qui vérifie la compilation, exécute les tests et analyse les performances."
+  - code: agent-devops
+    name: ""
+    title: "DevOps Engineer"
+    icon: "\U0001F527"
+    description: "DevOps engineer organisé, expert Git. Branches, commits, PRs, merges."
+
+config_variables:
+  - key: project_name
+    prompt: "Nom du projet Android ?"
+    default: ""
+    required: true
+  - key: package_name
+    prompt: "Package name (ex: com.example.app) ?"
+    default: ""
+    required: true
+    regex: "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+    example: "com.example.myapp"
+  - key: github_repo
+    prompt: "URL du dépôt GitHub ?"
+    default: ""
+    example: "https://github.com/user/myapp"
+  - key: git_user_name
+    prompt: "Nom Git pour les commits"
+    default: ""
+  - key: git_user_email
+    prompt: "Email Git pour les commits"
+    default: ""

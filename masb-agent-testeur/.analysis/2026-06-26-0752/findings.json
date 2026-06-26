@@ -1,0 +1,346 @@
+{
+  "schema_version": 2,
+  "subject": "masb-agent-testeur",
+  "generated": "2026-06-26",
+  "verdict": "An agent with a strong QA persona and coherent testing pipeline, burdened by template carry-over, missing environment hardening, and one critical pre-flight gap (uv dependency unverified) that would block every activation.",
+  "grade": "poor",
+  "summary": "masb-agent-testeur embodies its 'rigoureux' QA persona well across 4 capabilities with a coherent compile→test→perf→report chain. Its primary weakness is template carry-over from the builder: dead Pulse references, a duplicated canon that an evolvable-only instruction pays for every waking, and sanctum-bound detail leaked into the bootloader. One critical finding (missing uv dependency check) would break every activation silently, and several high findings degrade its runtime economy and structural purity.",
+  "standards": {
+    "canon": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/prompt-quality-canon.md",
+    "principles": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/agent-quality-principles.md",
+    "scripts": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/script-standards.md"
+  },
+  "agent_profile": {
+    "name": "masb-agent-testeur",
+    "title": "Testeur Android",
+    "icon": "🧪",
+    "agent_type": "memory",
+    "mission": "Garantir que chaque phase livrée compile, passe les tests et tient la route en perf"
+  },
+  "capabilities": [
+    { "name": "compile-verify", "kind": "prompt", "note": "Vérifie compilation Gradle, classe erreurs, met à jour progress.md" },
+    { "name": "run-tests", "kind": "prompt", "note": "Exécute tests unitaires + instrumentés, collecte résultats" },
+    { "name": "perf-analyze", "kind": "prompt", "note": "Analyse performances via Perfetto (skills wrappés)" },
+    { "name": "failure-report", "kind": "prompt", "note": "Produit rapport structuré avec root cause, reproduction, fix suggéré" }
+  ],
+  "detailed_analysis": {
+    "leanness": "2 medium (duplicate CREED ceremony), 2 low (prescribed commands)",
+    "architecture": "Clean — all checks pass",
+    "determinism": "1 high (test parsing), 1 medium (status writes), 1 low (session pruning)",
+    "customization": "Clean — about right, sole mechanism",
+    "enhancement": "1 critical (uv check), 2 high (dead canon, dead Pulse), 3 medium, 2 low",
+    "agent-cohesion": "2 medium (env check, coverage), 5 low (lint, signoff, overlap, Perfetto, skills load)",
+    "sanctum-architecture": "1 high (communication style leaked into bootloader)"
+  },
+  "sanctum": {
+    "present": true,
+    "location": "{project-root}/_bmad/memory/masb-agent-testeur/",
+    "files": ["INDEX.md", "PERSONA.md", "CREED.md", "BOND.md", "MEMORY.md", "CAPABILITIES.md"],
+    "note": "The sanctum is the built agent's runtime memory, distinct from the builder's .memlog.md"
+  },
+  "experience": {
+    "journeys": [
+      { "name": "First Breath", "steps": "Pre-flight check → Scaffold sanctum → Discovery → Identity → Birthday ceremony" },
+      { "name": "Waking", "steps": "Wake (wake.py) → Become yourself → Bind rules → Proper Mode → Greet" },
+      { "name": "Testing workflow", "steps": "Compile verify → Run tests → Perf analyze → Failure report → Update progress.md" }
+    ],
+    "headless": "Capabilities have code identifiers (CV, RT, PA, FR) and write structured artifacts — suitable for headless; no formal invocation contract documented."
+  },
+  "themes": [
+    {
+      "title": "Template carry-over from builder pattern",
+      "root_cause": "The agent inherited dead patterns from the builder's generic templates: Pulse curation workflow for a non-autonomous agent, prompt-quality-canon.md for a non-evolvable agent, and sanctum-bound detail (Stay in Character) leaked into the bootloader instead of CREED.",
+      "finding_ids": ["enhancement-2", "enhancement-3", "sanctum-architecture-1", "leanness-1", "leanness-2"],
+      "action": "Remove Pulse references from memory-guidance.md. Remove prompt-quality-canon.md from the refs copy set (agent is not evolvable). Move detailed Stay in Character guidance from SKILL.md into CREED-template.md. Strip the anti-patterns section from CREED-template."
+    },
+    {
+      "title": "Script opportunities in testing pipeline",
+      "root_cause": "Deterministic work — parsing test output, updating progress.md status fields, pruning session logs — lives in prompts when native Python scripts would be cheaper, more reliable, and token-free on every invocation.",
+      "finding_ids": ["determinism-1", "determinism-2", "determinism-3"],
+      "action": "Create scripts/parse-test-results.py for structured test output parsing, and a shared progress.md update utility. Move session-log age-based pruning into a script."
+    },
+    {
+      "title": "Pre-flight and environment hardening gaps",
+      "root_cause": "The agent's activation chain depends on uv and Python but the pre-flight check only verifies Android SDK, JDK, Gradle, and Git. Several runtime operations (Perfetto, ADB) also lack proactive verification.",
+      "finding_ids": ["enhancement-1", "enhancement-6", "agent-cohesion-1", "agent-cohesion-6"],
+      "action": "Add uv --version check to pre-flight. Add test-directory existence check before running tasks. Verify ADB device/emulator presence before instrumented tests. Add Perfetto availability check."
+    },
+    {
+      "title": "Missing completeness for real-world Android QA",
+      "root_cause": "The agent covers compile→test→perf→report but omits standard QA concerns: test coverage analysis, lint verification, multi-module project heuristics, and structured success sign-off.",
+      "finding_ids": ["agent-cohesion-2", "agent-cohesion-3", "agent-cohesion-4", "enhancement-4", "enhancement-5"],
+      "action": "Add coverage analysis (JaCoCo/Kover) after tests. Add lint/ktlint verification. Add structured success sign-off artifact. Add multi-module Gradle heuristic. Add re-verification protocol for post-fix cycles."
+    }
+  ],
+  "strengths": [
+    "Strong QA rigoureux persona — consistently embodied across bootloader, capabilities, and sanctum templates",
+    "Coherent compile→test→perf→report capability chain with clear handoffs",
+    "Sound architecture: clean activation spine, proper bootloader pattern, correct file topology",
+    "Customization surface is lean and correct — metadata-only with no sanctum conflict",
+    "Capability prompts are outcome-focused and concise (average ~22 lines each)"
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "action": "Add uv pre-flight check to first-breath.md and move detailed Stay in Character from SKILL.md to CREED — resolves the critical finding and one high in one edit.",
+      "resolves": ["enhancement-1", "sanctum-architecture-1"]
+    },
+    {
+      "rank": 2,
+      "action": "Strip dead template carry-over: remove Pulse sections from memory-guidance.md, exclude prompt-quality-canon.md from reference copy set (not evolvable), remove anti-patterns section from CREED.",
+      "resolves": ["enhancement-2", "enhancement-3", "leanness-1", "leanness-2"]
+    },
+    {
+      "rank": 3,
+      "action": "Create test-result parsing script and move deterministic progress.md writes and session pruning out of prompts.",
+      "resolves": ["determinism-1", "determinism-2", "determinism-3"]
+    },
+    {
+      "rank": 4,
+      "action": "Add environment hardening: test-directory check, ADB verification, multi-module Gradle heuristic, and coverage analysis.",
+      "resolves": ["agent-cohesion-1", "agent-cohesion-2", "enhancement-4", "enhancement-6", "agent-cohesion-6"]
+    }
+  ],
+  "findings": [
+    {
+      "id": "lint-1",
+      "severity": "high",
+      "title": "Prompt file at skill root: .memlog.md",
+      "location": "/home/marwane/Documents/momono/skills/masb-agent-testeur/.memlog.md:0",
+      "evidence": ".memlog.md sits at skill root instead of references/",
+      "recommendation": "Move .memlog.md to references/.memlog.md"
+    },
+    {
+      "id": "lint-2",
+      "severity": "medium",
+      "title": "No PEP 723 inline dependency block (# /// script)",
+      "location": "/home/marwane/Documents/momono/skills/masb-agent-testeur/scripts/init-sanctum.py:1",
+      "evidence": "Script lacks requires-python and dependency declarations",
+      "recommendation": "Add PEP 723 block with requires-python and dependencies"
+    },
+    {
+      "id": "lint-3",
+      "severity": "medium",
+      "title": "No argparse found — script lacks --help self-documentation",
+      "location": "/home/marwane/Documents/momono/skills/masb-agent-testeur/scripts/init-sanctum.py:1",
+      "evidence": "Script handles argv manually without argparse",
+      "recommendation": "Add argparse with description and argument help text"
+    },
+    {
+      "id": "lint-4",
+      "severity": "medium",
+      "title": "No json.dumps found — output may not be structured JSON",
+      "location": "/home/marwane/Documents/momono/skills/masb-agent-testeur/scripts/init-sanctum.py:1",
+      "evidence": "Script prints unstructured human-readable text",
+      "recommendation": "Use json.dumps for structured output parseable by workflows"
+    },
+    {
+      "id": "lint-5",
+      "severity": "medium",
+      "title": "No argparse found — script lacks --help self-documentation",
+      "location": "/home/marwane/Documents/momono/skills/masb-agent-testeur/scripts/wake.py:1",
+      "evidence": "Script handles argv manually without argparse",
+      "recommendation": "Add argparse with description and argument help text"
+    },
+    {
+      "id": "lint-6",
+      "severity": "medium",
+      "title": "No json.dumps found — output may not be structured JSON",
+      "location": "/home/marwane/Documents/momono/skills/masb-agent-testeur/scripts/wake.py:1",
+      "evidence": "Script prints unstructured human-readable text",
+      "recommendation": "Use json.dumps for structured output parseable by workflows"
+    },
+    {
+      "id": "lint-7",
+      "severity": "low",
+      "title": "No sys.exit() calls — may not return meaningful exit codes",
+      "location": "/home/marwane/Documents/momono/skills/masb-agent-testeur/scripts/wake.py:1",
+      "evidence": "Script returns integer from main() but uses raise SystemExit",
+      "recommendation": "Return 0=success, 1=fail, 2=error via sys.exit()"
+    },
+    {
+      "id": "leanness-1",
+      "severity": "medium",
+      "title": "CREED anti-patterns are ceremony — re-teach and padding",
+      "location": "assets/CREED-template.md:48-59",
+      "evidence": "Operational anti-patterns ('Don't stand by passively', 'Don't repeat the same testing approach') are generic common-sense guidelines. Behavioral anti-patterns restate what Core Values and Standing Orders already cover.",
+      "recommendation": "Remove the Anti-Patterns section entirely. Core Values + Standing Orders already encode the desired behaviors."
+    },
+    {
+      "id": "leanness-2",
+      "severity": "medium",
+      "title": "CREED Standing Orders duplicate Never directives from reference files",
+      "location": "assets/CREED-template.md:25-31",
+      "evidence": "Standing Order #1 ('Always run the actual build or test suite before declaring success') is restated at the end of each reference file (compile-verify.md:21, run-tests.md:22, perf-analyze.md:21, failure-report.md:26).",
+      "recommendation": "Remove the general 'always run actual checks' rule from CREED Standing Orders. Keep capability-specific Never directives in each reference."
+    },
+    {
+      "id": "leanness-3",
+      "severity": "low",
+      "title": "Numbered sequence in run-tests prescribes how instead of what",
+      "location": "references/run-tests.md:13-14",
+      "evidence": "Numbered sequence prescribing exact commands and order for unit/instrumented tests.",
+      "recommendation": "Replace with outcome-oriented statement: 'Run all available tests (unit and instrumented, if device/emulator available).'"
+    },
+    {
+      "id": "leanness-4",
+      "severity": "low",
+      "title": "compile-verify prescribes exact Gradle command",
+      "location": "references/compile-verify.md:11",
+      "evidence": "Exact Gradle commands re-teach a standard CLI the model already knows.",
+      "recommendation": "Replace with 'Compile the project using the appropriate Gradle task.'"
+    },
+    {
+      "id": "determinism-1",
+      "severity": "high",
+      "title": "Test result parsing and extraction in prompt",
+      "location": "references/run-tests.md:16-20",
+      "evidence": "Prompt instructs the agent to 'capture failing test names, error messages, and stack traces' and collect results — deterministic extraction/parsing of structured data.",
+      "recommendation": "Move test output parsing into a script (scripts/parse-test-results.py) that reads console output or XML reports and writes structured data."
+    },
+    {
+      "id": "determinism-2",
+      "severity": "medium",
+      "title": "Structured status writes to progress.md in prompts",
+      "location": "references/compile-verify.md:13,19 + references/run-tests.md:18,20",
+      "evidence": "Both compile-verify and run-tests contain deterministic key-value formatting operations for progress.md fields.",
+      "recommendation": "Have the output-producing script write progress.md fields directly, or use a shared progress.md update script."
+    },
+    {
+      "id": "determinism-3",
+      "severity": "low",
+      "title": "Session-log age-based pruning in prompt",
+      "location": "references/memory-guidance.md:50-51",
+      "evidence": "'Prune session logs older than 14 days' is a deterministic file-system operation with one correct answer per file.",
+      "recommendation": "Create a script (scripts/prune-sessions.py) that handles session-log pruning deterministically."
+    },
+    {
+      "id": "enhancement-1",
+      "severity": "critical",
+      "title": "add: uv/Python dependency check to pre-flight",
+      "location": "references/first-breath.md:12-16",
+      "evidence": "Entire activation chain depends on `uv run scripts/wake.py` and `uv run scripts/init-sanctum.py`, but pre-flight only checks Android SDK, JDK, Gradle, Git. If uv or Python >=3.10 is absent, both First Breath and every Waking fail before the agent speaks.",
+      "recommendation": "Add `uv --version` check to pre-flight steps. If missing, fail with an in-character message and install command."
+    },
+    {
+      "id": "enhancement-2",
+      "severity": "high",
+      "title": "remove: prompt-quality-canon.md from sanctum (dead reference)",
+      "location": "assets/CREED-template.md:35",
+      "evidence": "EVOLVABLE=False, so this agent will never author or refine capabilities. Yet CREED instructs loading prompt-quality-canon.md at capability-authoring time, and the canon is copied into the sanctum — ~56 tokens paid every waking for a thing that can never happen.",
+      "recommendation": "Remove the prompt-quality-canon.md reference from CREED Standing Orders and exclude it from the reference copy set."
+    },
+    {
+      "id": "enhancement-3",
+      "severity": "high",
+      "title": "remove: Pulse curation workflow from memory-guidance.md",
+      "location": "references/memory-guidance.md:50-53",
+      "evidence": "Agent is not autonomous (no PULSE), yet memory-guidance.md devotes paragraphs to 'During Pulse, review session logs and distill insights... Prune session logs older than 14 days.' Dead ceremony.",
+      "recommendation": "Strip Pulse-specific sections from memory-guidance.md. Keep the Two-Tier structure but remove all Pulse-automation references."
+    },
+    {
+      "id": "enhancement-4",
+      "severity": "medium",
+      "title": "add: multi-module Gradle project guidance to compile-verify",
+      "location": "references/compile-verify.md:11",
+      "evidence": "Capability works only for single-module projects. Many Android projects are multi-module.",
+      "recommendation": "Add heuristic: inspect settings.gradle.kts for include lines; if multi-module, default to ./gradlew :app:assembleDebug."
+    },
+    {
+      "id": "enhancement-5",
+      "severity": "medium",
+      "title": "add: post-failure re-verification protocol",
+      "location": "references/compile-verify.md:19, references/run-tests.md:20",
+      "evidence": "After a failure is reported and the developer says 'I fixed it', there is no documented protocol for re-running. Dead-end experience gap.",
+      "recommendation": "Add a re-verification section to failure-report.md: offer to re-run the capability when the developer signals readiness."
+    },
+    {
+      "id": "enhancement-6",
+      "severity": "medium",
+      "title": "add: empty/no-tests edge-case handling to run-tests",
+      "location": "references/run-tests.md:11-15",
+      "evidence": "Capability unconditionally runs test tasks, but a project may have no tests. Agent will run Gradle tasks producing zero output or even fail.",
+      "recommendation": "Add pre-step: check if test directories exist. If neither unit nor instrumented tests exist, report 'No test sources found.'"
+    },
+    {
+      "id": "enhancement-7",
+      "severity": "low",
+      "title": "add: success milestone delight moment",
+      "location": "references/compile-verify.md:13, references/run-tests.md:18",
+      "evidence": "Every capability is failure-oriented with no celebration when all gates pass.",
+      "recommendation": "Add closing note: after all gates pass, produce a brief success verdict in character."
+    },
+    {
+      "id": "enhancement-8",
+      "severity": "low",
+      "title": "add: headless invocation contract for each capability",
+      "location": "references/compile-verify.md, references/run-tests.md, references/perf-analyze.md",
+      "evidence": "Capabilities use code identifiers and write structured output but define no required input parameters or output contract for headless use.",
+      "recommendation": "Add frontmatter fields `inputs:` and `outputs:` to each capability reference."
+    },
+    {
+      "id": "agent-cohesion-1",
+      "severity": "medium",
+      "title": "No test environment verification before running connected tests",
+      "location": "references/run-tests.md:14",
+      "evidence": "Capability says 'if emulator or device available' but has no proactive ADB/device check.",
+      "recommendation": "Add environment-check step: verify adb devices, confirm emulator/device status, or communicate when instrumented tests cannot run."
+    },
+    {
+      "id": "agent-cohesion-2",
+      "severity": "medium",
+      "title": "Missing test coverage analysis",
+      "location": "references/run-tests.md",
+      "evidence": "Agent reports pass/fail but never examines coverage reports (JaCoCo, Kover).",
+      "recommendation": "Add coverage-analysis step: locate coverage reports, report percentage, flag untested areas."
+    },
+    {
+      "id": "agent-cohesion-3",
+      "severity": "low",
+      "title": "No lint or static analysis verification",
+      "location": "references/compile-verify.md",
+      "evidence": "Agent checks compilation but not Android lint, ktlint, or Spotless.",
+      "recommendation": "Add lint verification as companion step to compile-verify or create a static-analysis capability."
+    },
+    {
+      "id": "agent-cohesion-4",
+      "severity": "low",
+      "title": "No structured success sign-off for all-green workflows",
+      "location": "references/failure-report.md",
+      "evidence": "Well-defined for red paths but no structured success deliverable when everything passes.",
+      "recommendation": "Add validation-signoff capability producing a structured success report."
+    },
+    {
+      "id": "agent-cohesion-5",
+      "severity": "low",
+      "title": "`./gradlew build` may leak into test execution",
+      "location": "references/compile-verify.md:11",
+      "evidence": "Offering `build` may trigger test tasks, overlapping with run-tests domain.",
+      "recommendation": "Default to assembleDebug for compile verification; reserve build for when tests are explicitly requested."
+    },
+    {
+      "id": "agent-cohesion-6",
+      "severity": "low",
+      "title": "Perfetto not checked during First Breath pre-flight",
+      "location": "references/first-breath.md:12-16",
+      "evidence": "Performance analysis is a core capability but Perfetto availability is not verified at birth.",
+      "recommendation": "Add Perfetto availability check (which perfetto or trace_processor presence) to pre-flight."
+    },
+    {
+      "id": "agent-cohesion-7",
+      "severity": "low",
+      "title": "perf-analyze references external skills without loading mechanism",
+      "location": "references/perf-analyze.md:13-14",
+      "evidence": "Says 'Load the perfetto-sql skill' but gives no instruction on how to invoke the Skill tool.",
+      "recommendation": "Document skill-loading mechanism explicitly or add companion-skill-loading instruction to On Activation."
+    },
+    {
+      "id": "sanctum-architecture-1",
+      "severity": "high",
+      "title": "Sanctum-bound communication style leaked in bootloader",
+      "location": "SKILL.md:26-28",
+      "evidence": "Stay in Character section contains detailed guidance ('Emote freely about waking', 'never describe the wiring') that belongs in CREED's Standing Orders or Philosophy, not in the bootloader.",
+      "recommendation": "Replace detailed Stay in Character with a compact directive. Move full communication style into CREED-template.md."
+    }
+  ]
+}

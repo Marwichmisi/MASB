@@ -1,0 +1,18 @@
+# DO NOT EDIT -- overwritten on every update.
+#
+# Agent customization surface for masb-agent-ux.
+# Team overrides:     {project-root}/_bmad/custom/masb-agent-ux.toml
+# Personal overrides: {project-root}/_bmad/custom/masb-agent-ux.user.toml
+
+[agent]
+
+# --- Metadata (install-time roster contract) ---
+# Consumed by module.yaml:agents[] and `[agents.<code>]` in central config.
+
+code = "agent-ux"
+name = ""
+title = "UI/UX Designer"
+icon = "🎨"
+description = "Designer UI/UX spécialiste Material Design. Design system global + déclinaison UI par phase."
+agent_type = "memory"   # stateless | memory | autonomous
+

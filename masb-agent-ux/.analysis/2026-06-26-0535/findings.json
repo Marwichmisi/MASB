@@ -1,0 +1,147 @@
+{
+  "schema_version": 2,
+  "subject": "masb-agent-ux",
+  "generated": "2026-06-26",
+  "verdict": "Solid memory agent with rich persona, but capability prompts read as checklists rather than the warm designer character First Breath builds",
+  "grade": "good",
+  "summary": "masb-agent-ux has a well-defined UI/UX Designer persona with four capabilities covering the full design workflow from global design system through per-phase UI to validation. The sanctum is complete, scripts are correct, and First Breath territories are domain-adapted. The main opportunities are infusing persona voice into the capability prompts (they read as dry checklists), fixing two sanctum wiring defects (placeholder mismatch, memlog leaking into runtime), and clarifying accessibility layering across three capabilities.",
+  "standards": {
+    "canon": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/prompt-quality-canon.md",
+    "principles": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/agent-quality-principles.md",
+    "scripts": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/script-standards.md"
+  },
+  "agent_profile": {
+    "name": "agent-ux",
+    "title": "UI/UX Designer",
+    "icon": "🎨",
+    "agent_type": "memory",
+    "mission": "Transformer chaque projet Android en une experience visuelle cohérente, accessible et fidèle au Material Design 3"
+  },
+  "capabilities": [
+    { "name": "design-system", "kind": "prompt", "note": "Produit le design system global (palette, typo, icônes, thème M3, accessibilité)" },
+    { "name": "ui-spec", "kind": "prompt", "note": "Décline le design system pour une phase spécifique" },
+    { "name": "accessibility-check", "kind": "prompt", "note": "Vérifie l'accessibilité du design (WCAG, contrastes, cibles)" },
+    { "name": "theme-validate", "kind": "prompt", "note": "Valide la cohérence entre toutes les phases" }
+  ],
+  "detailed_analysis": {
+    "leanness": "Four capability prompts carry format-templating checklists; sanctum templates lean with minor redundant content",
+    "architecture": "Sound memory archetype, but CREED carries dead pointer and Pulse refs on non-autonomous agent",
+    "determinism": "One script candidate: theme-validate diff work should be a pre-pass script",
+    "customization": "Metadata-only memory agent, about right, sole mechanism",
+    "enhancement": "Strong persona foundations but capabilities lose the character; fallback handling missing",
+    "agent-cohesion": "Authentic persona with well-aligned capabilities; accessibility layering unclear, no iteration loop",
+    "sanctum-architecture": "Complete and seeded; placeholder mismatch and memlog leak in sanctum"
+  },
+  "sanctum": {
+    "present": true,
+    "location": "{project-root}/_bmad/memory/masb-agent-ux/",
+    "files": ["INDEX.md", "PERSONA.md", "CREED.md", "BOND.md", "MEMORY.md", "CAPABILITIES.md"],
+    "note": "All 6 standard templates present with meaningful domain-specific seeds. Two wiring issues: project-root/project_root placeholder mismatch in CREED Dominion paths, and .memlog.md leaks into sanctum via copy_references."
+  },
+  "experience": {
+    "journeys": [
+      { "name": "First Breath", "steps": "Scaffold sanctum → warm calibration conversation → name, vibe, design preferences, mission, capabilities → birthday ceremony" },
+      { "name": "Waking", "steps": "Wake via wake.py → become yourself (load sanctum) → bind standing rules → continuity callback or capabilities offer" }
+    ],
+    "headless": "All 4 capabilities hardcode MASB workspace paths and assume pre-existing files. No path for pre-supplied inputs or automated invocation."
+  },
+  "themes": [
+    {
+      "title": "Capability prompts are checklists, not the persona",
+      "root_cause": "First Breath builds a warm, creative designer who 'raconte pourquoi ces couleurs fonctionnent', but all 4 capability prompts are dry bullet lists — the persona voice disappears during execution. The leanness lens identifies the checklist pattern (format templating, yellow-flag NEVER constructions), and the enhancement lens confirms the remedy: open each capability with 1-2 lines of persona stance.",
+      "finding_ids": ["leanness-1", "leanness-2", "leanness-3", "leanness-4", "leanness-5", "leanness-6", "leanness-7", "leanness-8", "enhancement-1"],
+      "action": "Open each capability prompt with persona stance ('Tu es designer, pas un générateur de checklist'), collapse bullet lists to goal sentences, and replace NEVER constructions with positive framing."
+    },
+    {
+      "title": "Sanctum wiring: dead references, placeholder mismatch, memlog leak",
+      "root_cause": "Three glitches in the sanctum lifecycle: (1) CREED instructs the agent to load prompt-quality-canon.md but it's in SKILL_ONLY_FILES and never copied, (2) CREED-template uses {project-root} (hyphen) but init-sanctum.py provides project_root (underscore) so Dominion paths render as literal placeholders, (3) .memlog.md in references/ leaks into the agent's runtime sanctum via copy_references. The canon pull-in order is additionally inert since EVOLVABLE=False.",
+      "finding_ids": ["architecture-1", "sanctum-1", "sanctum-2"],
+      "action": "Add .memlog.md to SKILL_ONLY_FILES, fix placeholder to use matching token, and remove the canon pull-in standing order from CREED-template since the agent is not evolvable."
+    },
+    {
+      "title": "Pulse and stateless vestiges on non-autonomous memory agent",
+      "root_cause": "INDEX-template, MEMORY-template, and memory-guidance.md reference 'during Pulse' for curation, but Pulse is not enabled for this agent. Simultaneously, memory-guidance.md opens with 'You are stateless', contradicting the Sacred Truth's continuity framing. SKILL.md also mentions --pulse in step 1.",
+      "finding_ids": ["architecture-2", "enhancement-6", "enhancement-7"],
+      "action": "Replace 'during Pulse' with 'at natural breaks' or 'at session end', remove the --pulse clause from SKILL.md step 1, and replace 'You are stateless' with 'Your working memory resets between sessions'."
+    },
+    {
+      "title": "Accessibility and iteration gaps in design workflow",
+      "root_cause": "Three capabilities (DS, AC, TV) touch WCAG without clear layering — DS defines, AC audits, TV monitors — but the boundary is undocumented. No capability validates designs against official Material Design 3 guidelines (elevation semantics, dynamic color, motion). The workflow terminates at TV (deviation report) with no path to revise the DS or US.",
+      "finding_ids": ["agent-cohesion-1", "agent-cohesion-2", "agent-cohesion-3"],
+      "action": "Document the layering explicitly in each capability's scope, add M3 compliance validation to TV, and add revise-design-system / update-ui-spec capabilities for the iteration loop."
+    }
+  ],
+  "strengths": [
+    "Rich, domain-specific First Breath with calibration territories tailored to a UI/UX designer relationship",
+    "Solid memory agent scaffolding: correct wake.py/init-sanctum.py, all 6 sanctum templates present with domain-specific seeds",
+    "Persona voice in SKILL.md, CREED, and PERSONA template is warm, creative, and distinctive — the character feels real",
+    "Four capabilities cover the full design workflow end-to-end: global DS → per-phase US → AC → TV cross-phase validation",
+    "External skill dependencies (font-m3-cli, material-symbols-cli, adaptive, styles, edge-to-edge) are appropriate for the domain"
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "action": "Infuse persona voice into all 4 capability prompts — open each with 1-2 lines of stance (collapses checklist findings) and replace numbered bullet sections with goal sentences",
+      "resolves": ["leanness-1", "leanness-2", "leanness-3", "leanness-4", "leanness-5", "leanness-6", "leanness-7", "leanness-8", "enhancement-1"]
+    },
+    {
+      "rank": 2,
+      "action": "Fix sanctum wiring: add .memlog.md to SKILL_ONLY_FILES (sanctum-2), change {project-root} to {project_root} in CREED Dominion paths (sanctum-1), remove canon pull-in from CREED-template since EVOLVABLE=False (architecture-1), replace Pulse refs (architecture-2)",
+      "resolves": ["architecture-1", "sanctum-1", "sanctum-2", "architecture-2", "enhancement-6", "enhancement-7"]
+    },
+    {
+      "rank": 3,
+      "action": "Clarify accessibility layering: DS defines target level, AC audits, TV monitors across phases. Add M3 compliance validation to TV's scope. Add revise-design-system and update-ui-spec capabilities for iteration.",
+      "resolves": ["agent-cohesion-1", "agent-cohesion-2", "agent-cohesion-3"]
+    },
+    {
+      "rank": 4,
+      "action": "Add graceful fallback for missing workspace files: if brainstorm.md/prd.md don't exist, surface in character and offer to backfill context conversationally",
+      "resolves": ["enhancement-2"]
+    },
+    {
+      "rank": 5,
+      "action": "Pre-pass the deterministic comparison work in theme-validate into a script (scripts/extract-design-tokens.py) so the prompt reasons over structured JSON diffs instead of raw files",
+      "resolves": ["determinism-1"]
+    }
+  ],
+  "findings": [
+    {"id": "lint-1", "lens": "lint", "severity": "medium", "title": "init-sanctum.py No PEP 723 inline dependency block", "location": "scripts/init-sanctum.py:1", "evidence": "Script missing # /// script block with requires-python", "recommendation": "Add PEP 723 block"},
+    {"id": "lint-2", "lens": "lint", "severity": "medium", "title": "init-sanctum.py No argparse", "location": "scripts/init-sanctum.py:1", "evidence": "Script lacks --help self-documentation", "recommendation": "Add argparse"},
+    {"id": "lint-3", "lens": "lint", "severity": "medium", "title": "init-sanctum.py No json.dumps", "location": "scripts/init-sanctum.py:1", "evidence": "Output not structured JSON", "recommendation": "Use json.dumps"},
+    {"id": "lint-4", "lens": "lint", "severity": "medium", "title": "No unit test for init-sanctum.py", "location": "scripts/init-sanctum.py", "evidence": "No test file found", "recommendation": "Create unit test"},
+    {"id": "lint-5", "lens": "lint", "severity": "medium", "title": "wake.py No argparse", "location": "scripts/wake.py:1", "evidence": "Script lacks --help", "recommendation": "Add argparse"},
+    {"id": "lint-6", "lens": "lint", "severity": "medium", "title": "wake.py No json.dumps", "location": "scripts/wake.py:1", "evidence": "Output not structured JSON", "recommendation": "Use json.dumps"},
+    {"id": "lint-7", "lens": "lint", "severity": "low", "title": "wake.py No sys.exit calls", "location": "scripts/wake.py:1", "evidence": "May not return meaningful exit codes", "recommendation": "Add sys.exit()"},
+    {"id": "lint-8", "lens": "lint", "severity": "medium", "title": "No unit test for wake.py", "location": "scripts/wake.py", "evidence": "No test file found", "recommendation": "Create unit test"},
+    {"id": "lint-9", "lens": "lint", "severity": "high", "title": "scripts/tests/ directory missing", "location": "scripts/tests/", "evidence": "No unit tests for any script", "recommendation": "Create scripts/tests/ with test files"},
+    {"id": "leanness-1", "lens": "leanness", "severity": "medium", "title": "Design-system DOIT list is format templating", "location": "references/design-system.md:15-22", "evidence": "Six bullets enumerating standard M3 design system sections the model already knows", "recommendation": "Replace with a single outcome sentence"},
+    {"id": "leanness-2", "lens": "leanness", "severity": "medium", "title": "UI-spec DOIT list is format templating", "location": "references/ui-spec.md:15-23", "evidence": "Seven bullets listing standard UI spec sections", "recommendation": "Collapse to one goal sentence"},
+    {"id": "leanness-3", "lens": "leanness", "severity": "medium", "title": "Accessibility-check checklist is format templating", "location": "references/accessibility-check.md:15-23", "evidence": "Seven WCAG checkpoints the expert already knows", "recommendation": "Replace checklist with a goal sentence"},
+    {"id": "leanness-4", "lens": "leanness", "severity": "medium", "title": "Theme-validate comparison list is format templating", "location": "references/theme-validate.md:15-22", "evidence": "Six comparison dimensions the role implies", "recommendation": "Replace with goal sentence"},
+    {"id": "leanness-5", "lens": "leanness", "severity": "medium", "title": "Theme-validate deviation process is numbered sequence", "location": "references/theme-validate.md:24-27", "evidence": "Three sub-bullets describing sequential process", "recommendation": "Collapse to one goal sentence"},
+    {"id": "leanness-6", "lens": "leanness", "severity": "low", "title": "Accessibility-check reporting format prescriptive", "location": "references/accessibility-check.md:27", "evidence": "Enumerates output fields instead of stating goal", "recommendation": "Replace with 'Produis un rapport structuré'"},
+    {"id": "leanness-7", "lens": "leanness", "severity": "low", "title": "NEVER construction in design-system", "location": "references/design-system.md:26", "evidence": "'Ne jamais inventer' — ALL-CAPS prescriptive tone", "recommendation": "Reword as positive standing order"},
+    {"id": "leanness-8", "lens": "leanness", "severity": "low", "title": "NEVER construction in ui-spec", "location": "references/ui-spec.md:27", "evidence": "'Ne jamais réinventer' — second instance of pattern", "recommendation": "Reword as positive"},
+    {"id": "leanness-9", "lens": "leanness", "severity": "low", "title": "Three redundant anti-patterns in CREED template", "location": "assets/CREED-template.md:55-57", "evidence": "Anti-patterns 1-3 restate rules from Core Values and Standing Orders", "recommendation": "Drop or merge into relevant Core Value"},
+    {"id": "leanness-10", "lens": "leanness", "severity": "low", "title": "Meta-commentary before standing orders", "location": "assets/CREED-template.md:33", "evidence": "'These are always active' — meta-explanation the model infers", "recommendation": "Cut the line"},
+    {"id": "leanness-11", "lens": "leanness", "severity": "low", "title": "Verbose tool preference in CAPABILITIES template", "location": "assets/CAPABILITIES-template.md:11", "evidence": "Three sentences saying the same directive", "recommendation": "Collapse to one sentence"},
+    {"id": "architecture-1", "lens": "architecture", "severity": "medium", "title": "CREED standing order references canon excluded from sanctum", "location": "assets/CREED-template.md:48", "evidence": "prompt-quality-canon.md is in SKILL_ONLY_FILES, not copied to sanctum", "recommendation": "Remove canon pull-in from CREED since EVOLVABLE=False"},
+    {"id": "architecture-2", "lens": "architecture", "severity": "low", "title": "Pulse curation trigger on non-autonomous agent", "location": "assets/INDEX-template.md:11", "evidence": "References 'during Pulse' but agent is memory-only", "recommendation": "Replace with 'at natural breaks'"},
+    {"id": "architecture-3", "lens": "architecture", "severity": "low", "title": "customize.toml name field empty", "location": "customize.toml:12", "evidence": "name = \"\" while SKILL.md frontmatter has name: agent-ux", "recommendation": "Set name or leave empty for First Breath naming"},
+    {"id": "determinism-1", "lens": "determinism", "severity": "medium", "title": "theme-validate does deterministic file comparison in a prompt", "location": "references/theme-validate.md", "evidence": "Prompt instructs model to diff design docs — output is same for same inputs", "recommendation": "Write a pre-pass script to extract and diff design tokens as JSON"},
+    {"id": "enhancement-1", "lens": "enhancement", "severity": "high", "title": "ADD — Infuse persona voice into capability prompts", "location": "references/*.md", "evidence": "First Breath builds a warm persona; all 4 capability prompts are dry checklists", "recommendation": "Open each capability with 1-2 lines of persona framing"},
+    {"id": "enhancement-2", "lens": "enhancement", "severity": "high", "title": "ADD — Graceful fallback when workspace files missing", "location": "references/design-system.md:24", "evidence": "Assumes brainstorm.md and prd.md exist; no guidance if absent", "recommendation": "Add soft-gate: offer to backfill context conversationally"},
+    {"id": "enhancement-3", "lens": "enhancement", "severity": "medium", "title": "REMOVE — First Breath 10-step wrap-up ceremony", "location": "references/first-breath.md:107-115", "evidence": "10 sequential procedural steps contradict the warm calibration tone", "recommendation": "Collapse to 1-2 goal sentences"},
+    {"id": "enhancement-4", "lens": "enhancement", "severity": "medium", "title": "ADD — Handle casual check-in in Waking mode", "location": "SKILL.md:56-59", "evidence": "No path for social opening; agent forced to offer capabilities", "recommendation": "Add fork for casual openings before capabilities offer"},
+    {"id": "enhancement-5", "lens": "enhancement", "severity": "medium", "title": "ADD — Support headless capability invocation", "location": "references/design-system.md:13", "evidence": "All capabilities hardcode MASB workspace paths", "recommendation": "Add input contract: accept inline inputs vs file lookup"},
+    {"id": "enhancement-6", "lens": "enhancement", "severity": "low", "title": "REMOVE — Vestigial --pulse reference", "location": "SKILL.md:49", "evidence": "--pulse mentioned but agent has no Pulse mode", "recommendation": "Remove --pulse clause from SKILL.md step 1"},
+    {"id": "enhancement-7", "lens": "enhancement", "severity": "low", "title": "REMOVE — Contradictory 'stateless' language", "location": "references/memory-guidance.md:10", "evidence": "'You are stateless' contradicts Sacred Truth continuity", "recommendation": "Replace with 'Your working memory resets between sessions'"},
+    {"id": "agent-cohesion-1", "lens": "agent-cohesion", "severity": "high", "title": "Accessibility spread across 3 capabilities with unclear layering", "location": "references/design-system.md, references/accessibility-check.md, references/theme-validate.md", "evidence": "DS defines, AC audits, TV monitors — no documented boundary", "recommendation": "Document layering explicitly in each capability"},
+    {"id": "agent-cohesion-2", "lens": "agent-cohesion", "severity": "medium", "title": "No M3 compliance validation capability", "location": "references/theme-validate.md", "evidence": "Persona is M3 specialist but no capability validates M3 guideline compliance", "recommendation": "Extend TV to include M3 spec validation"},
+    {"id": "agent-cohesion-3", "lens": "agent-cohesion", "severity": "medium", "title": "No iteration capability after validation", "location": "references/design-system.md:28, references/theme-validate.md", "evidence": "DS figé after HITL, TV reports deviations with no revision path", "recommendation": "Add revise-design-system / update-ui-spec capabilities"},
+    {"id": "agent-cohesion-4", "lens": "agent-cohesion", "severity": "low", "title": "Zero-code vs CLI skills ambiguity", "location": "assets/CREED-template.md:44", "evidence": "CREED says 'ne jamais écrire de code' but references CLI tools", "recommendation": "Clarify if CLI tools imply code generation or just guidance"},
+    {"id": "sanctum-1", "lens": "sanctum-architecture", "severity": "medium", "title": "{project-root} placeholder mismatch in CREED Dominion", "location": "assets/CREED-template.md:65-78", "evidence": "Template uses hyphen but init-sanctum.py provides underscore", "recommendation": "Change template to use {project_root} or add hyphen variant"},
+    {"id": "sanctum-2", "lens": "sanctum-architecture", "severity": "low", "title": ".memlog.md leaks into sanctum runtime", "location": "references/.memlog.md", "evidence": "Builder artifact copied by copy_references into agent's memory", "recommendation": "Add .memlog.md to SKILL_ONLY_FILES"}
+  ]
+}

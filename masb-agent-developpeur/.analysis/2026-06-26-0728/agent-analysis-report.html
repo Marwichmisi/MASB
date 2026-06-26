@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Analysis Report</title>
+<style>
+  :root {
+    --bg: #0f1b2d;
+    --panel: #16263d;
+    --panel-2: #1d3250;
+    --ink: #e9eef6;
+    --ink-dim: #9fb0c7;
+    --line: #294366;
+    --accent: #b66d46;
+    --accent-ink: #f4d9c8;
+    --critical: #e05656;
+    --high: #e0904a;
+    --medium: #d8c24a;
+    --low: #5aa0d0;
+    --ok: #4caf72;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; }
+  header h1 { font-size: 22px; margin: 0 0 4px; }
+  header .meta { color: var(--ink-dim); font-size: 13px; }
+  header .meta b { color: var(--ink); font-weight: 600; }
+
+  .banner {
+    display: none;
+    background: #3a1414;
+    border: 1px solid var(--critical);
+    color: #ffd9d9;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+  }
+  .banner.show { display: block; }
+
+  .overview {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    margin: 18px 0;
+  }
+  .grade {
+    font-size: 34px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    text-transform: capitalize;
+  }
+  .grade.g-excellent { color: var(--ok); }
+  .grade.g-good { color: var(--low); }
+  .grade.g-fair { color: var(--medium); }
+  .grade.g-poor { color: var(--critical); }
+  .verdict { font-size: 16px; font-weight: 600; margin: 0 0 14px; }
+  .summary { color: var(--ink-dim); margin: 0 0 14px; }
+  .counts { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .pill .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .pill .n { font-weight: 700; }
+  .dot.critical { background: var(--critical); }
+  .dot.high { background: var(--high); }
+  .dot.medium { background: var(--medium); }
+  .dot.low { background: var(--low); }
+
+  /* Agent portrait (agent_profile block) */
+  .portrait {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    margin: 18px 0;
+  }
+  .portrait .icon {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+  }
+  .portrait .who { flex: 1 1 auto; min-width: 0; }
+  .portrait .who .name { font-size: 18px; font-weight: 700; }
+  .portrait .who .title { color: var(--ink-dim); font-size: 13px; margin-top: 1px; }
+  .portrait .who .mission { margin-top: 8px; }
+  .portrait .who .type {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--accent);
+    color: var(--accent-ink);
+  }
+
+  /* Generic agent-block / synthesis panel */
+  .block {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    margin: 18px 0;
+  }
+  .block > h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    margin: 0 0 12px;
+  }
+  .cap-list { list-style: none; margin: 0; padding: 0; }
+  .cap-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+  }
+  .cap-list li:first-child { border-top: none; }
+  .cap-list .cap-name { font-weight: 600; flex: 0 0 auto; }
+  .cap-list .cap-kind {
+    flex: 0 0 auto;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+  }
+  .cap-list .cap-note { color: var(--ink-dim); flex: 1 1 auto; min-width: 0; }
+  .kv { margin: 0; display: grid; grid-template-columns: 150px 1fr; gap: 6px 14px; }
+  .kv dt { color: var(--ink-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .kv dd { margin: 0; }
+  .block .journey { padding: 8px 0; border-top: 1px solid var(--line); }
+  .block .journey:first-of-type { border-top: none; padding-top: 0; }
+  .block .journey .j-name { font-weight: 600; }
+  .block .journey .j-steps { color: var(--ink-dim); margin-top: 2px; }
+  .block .mono, .block code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: var(--panel-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* Themes */
+  .theme { padding: 12px 0; border-top: 1px solid var(--line); }
+  .theme:first-of-type { border-top: none; padding-top: 0; }
+  .theme .t-head { display: flex; align-items: center; gap: 10px; }
+  .theme .t-title { font-weight: 600; flex: 1 1 auto; min-width: 0; }
+  .theme .t-cause { color: var(--ink-dim); margin-top: 4px; }
+  .theme .t-action { margin-top: 4px; }
+  .theme .t-findings { margin-top: 8px; padding-left: 12px; border-left: 2px solid var(--line); }
+  .theme .t-finding { font-size: 13px; color: var(--ink-dim); padding: 2px 0; }
+
+  /* Strengths */
+  .strength-list { margin: 0; padding-left: 20px; }
+  .strength-list li { padding: 2px 0; }
+
+  /* Recommendations */
+  .rec { padding: 8px 0; border-top: 1px solid var(--line); }
+  .rec:first-of-type { border-top: none; padding-top: 0; }
+  .rec .rank { font-weight: 700; color: var(--accent-ink); margin-right: 8px; }
+  .rec .resolves { color: var(--ink-dim); font-size: 12px; margin-left: 8px; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 10px;
+    flex-wrap: wrap;
+  }
+  .toolbar .sel-count { color: var(--ink-dim); font-size: 13px; }
+  button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    padding: 8px 14px;
+  }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1a0e07;
+    font-weight: 600;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  button.link {
+    background: none;
+    border: none;
+    color: var(--accent-ink);
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+  button.small { padding: 5px 10px; font-size: 13px; flex: 0 0 auto; }
+
+  .no-findings {
+    background: var(--panel);
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 28px;
+    text-align: center;
+    color: var(--ink-dim);
+  }
+  .no-findings .big { font-size: 18px; color: var(--ok); margin-bottom: 6px; }
+
+  .group { margin: 18px 0; }
+  .group > h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .finding {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--line);
+    border-radius: 8px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .finding.sev-critical { border-left-color: var(--critical); }
+  .finding.sev-high { border-left-color: var(--high); }
+  .finding.sev-medium { border-left-color: var(--medium); }
+  .finding.sev-low { border-left-color: var(--low); }
+
+  .finding .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+  .finding .row .chk { width: 16px; height: 16px; flex: 0 0 auto; cursor: pointer; }
+  .finding .row .head { flex: 1 1 auto; cursor: pointer; min-width: 0; }
+  .finding .row .title { font-weight: 600; }
+  .finding .row .sub { color: var(--ink-dim); font-size: 12px; margin-top: 2px; }
+  .finding .tag {
+    flex: 0 0 auto;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+  }
+  .finding .caret { flex: 0 0 auto; color: var(--ink-dim); transition: transform 0.15s; cursor: pointer; }
+  .finding.open .caret { transform: rotate(90deg); }
+
+  .finding .body {
+    display: none;
+    padding: 0 14px 14px 42px;
+    border-top: 1px solid var(--line);
+  }
+  .finding.open .body { display: block; }
+  .finding .body dl { margin: 12px 0 0; display: grid; grid-template-columns: 130px 1fr; gap: 6px 14px; }
+  .finding .body dt { color: var(--ink-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .finding .body dd { margin: 0; }
+  .finding .body code, .finding .body .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: var(--panel-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    background: var(--ok);
+    color: #06160c;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  .fallback-area { margin-top: 12px; display: none; }
+  .fallback-area.show { display: block; }
+  .fallback-area textarea {
+    width: 100%;
+    min-height: 160px;
+    background: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Agent Analysis Report</h1>
+    <div class="meta">
+      <span>Subject: <b id="m-subject">—</b></span> &nbsp;·&nbsp;
+      <span>Generated: <b id="m-generated">—</b></span> &nbsp;·&nbsp;
+      <span>Schema: <b id="m-schema">—</b></span>
+    </div>
+  </header>
+
+  <div id="parse-banner" class="banner"></div>
+
+  <!-- Agent portrait (agent_profile). Hidden when the block is absent. -->
+  <section id="portrait" class="portrait" hidden></section>
+
+  <section id="overview" class="overview" hidden>
+    <div id="grade" class="grade" hidden></div>
+    <p id="verdict" class="verdict"></p>
+    <p id="summary-text" class="summary" hidden></p>
+    <div id="counts" class="counts"></div>
+  </section>
+
+  <!-- Capability dashboard (capabilities). Hidden when absent. -->
+  <section id="capabilities" class="block" hidden></section>
+
+  <!-- Per-lens verdicts (detailed_analysis). Hidden when absent. -->
+  <section id="lens-verdicts" class="block" hidden></section>
+
+  <!-- Sanctum block (sanctum). Conditional; hidden for stateless agents. -->
+  <section id="sanctum" class="block" hidden></section>
+
+  <!-- Experience: journeys plus headless (experience). Hidden when absent. -->
+  <section id="experience" class="block" hidden></section>
+
+  <!-- Synthesis layer (themes, strengths, recommendations). Hidden when absent. -->
+  <section id="themes" class="block" hidden></section>
+  <section id="strengths" class="block" hidden></section>
+  <section id="recommendations" class="block" hidden></section>
+
+  <div id="toolbar" class="toolbar" hidden>
+    <button id="btn-copy" class="primary" disabled>Copy selected as paste-back prompt</button>
+    <span id="sel-count" class="sel-count">0 selected</span>
+    <button id="btn-select-all" class="link">Select all</button>
+    <button id="btn-clear" class="link">Clear</button>
+    <button id="btn-expand-all" class="link">Expand all</button>
+    <button id="btn-collapse-all" class="link">Collapse all</button>
+  </div>
+
+  <div id="fallback" class="fallback-area">
+    <p class="sel-count">Clipboard was unavailable. Copy the text below manually:</p>
+    <textarea id="fallback-text" readonly></textarea>
+  </div>
+
+  <div id="findings-root"></div>
+</div>
+
+<div id="toast" class="toast">Copied</div>
+
+<!-- scripts/render_report.py replaces the contents of this island per run.
+     The placeholder below is intentionally unusable: the shell refuses to
+     render it, so a failed injection can never look like real findings. -->
+<script type="application/json" id="report-data">
+{
+  "schema_version": 2,
+  "subject": "masb-agent-developpeur",
+  "generated": "2026-06-26",
+  "verdict": "Poor — critical TOML syntax error makes the sole config surface unparseable; bootloader leaks sanctum-bound content at 2.8x the guardrail; rich persona treated as investment, not waste.",
+  "grade": "poor",
+  "summary": "L'agent a une base solide (persona cohérente, sanctum complet, capabilities fonctionnelles) mais souffre d'un défaut TOML critique et d'une fuite de contenu du bootloader vers le sanctum. Les capability prompts sont légèrement sur-prescriptives mais le cœur du contenu est utile.",
+  "themes": [
+    {
+      "title": "Bootloader overweight with sanctum-bound content",
+      "root_cause": "SKILL.md carries 1133 tokens (~2.8x the ~400 token guardrail for memory bootloaders) because persona voice, detailed Waking Mode behavioral guidance, and capability routing detail leaked into the bootloader instead of living in the sanctum (PERSONA.md, CAPABILITIES.md). This inflates every activation and duplicates content that should live in one place.",
+      "finding_ids": [
+        "architecture-1",
+        "agent-cohesion-1",
+        "sanctum-1"
+      ],
+      "action": "Move persona voice/communication style to PERSONA-template.md. Trim Waking Mode to routing-only. Prune capability enumeration from frontmatter description. Target ~400 tokens."
+    },
+    {
+      "title": "Capability prompts carry ceremony and defensive padding",
+      "root_cause": "All three capability prompts (implement, compile-check, auto-fix) have numbered steps that force sequential execution where the model would reach the same outcome without instruction, plus 'Express path' sections that describe what the model would do anyway. The CREED template also has a formatting defect (literal \\n).",
+      "finding_ids": [
+        "leanness-1",
+        "leanness-2",
+        "leanness-4",
+        "leanness-5",
+        "sanctum-2"
+      ],
+      "action": "Collapse numbered sequences to goal sentences. Remove Express path blocks from all three capabilities. Fix CREED-template.md \\n formatting."
+    },
+    {
+      "title": "Developer workflow incomplete — missing dependency management and compile-fix pipeline",
+      "root_cause": "The implement → compile-check → auto-fix loop requires manual orchestration. Dependency management is explicitly excluded (escalated as 'complex error'). No single-shot pipeline chains the three capabilities end-to-end for expert users.",
+      "finding_ids": [
+        "agent-cohesion-2",
+        "enhancement-2"
+      ],
+      "action": "Add a compile-fix pipeline capability (CFL) that chains implement → compile → auto-fix → recompile → report. Add a manage-dependency capability or expand auto-fix for dependency resolution."
+    },
+    {
+      "title": "Sanctum self-containment broken for runtime dependencies",
+      "root_cause": "memory-guidance.md and prompt-quality-canon.md are in SKILL_ONLY_FILES and never copied to sanctum, yet the agent's CREED standing order and Persistent Memory directive reference them. After init, the agent depends on the skill bundle for normal operation.",
+      "finding_ids": [
+        "enhancement-1"
+      ],
+      "action": "Remove memory-guidance.md and prompt-quality-canon.md from SKILL_ONLY_FILES so they're copied to sanctum/references/ during init."
+    }
+  ],
+  "strengths": [
+    "Persona cohérente et reconnaissable — 'Développeur Android expert' se retrouve dans les trois capabilities",
+    "Sanctum structurellement complet — les 6 templates, wake.py et init-sanctum.py sont tous présents avec le bon SKILL_NAME et le bon flag EVOLVABLE",
+    "Capabilities fonctionnelles avec frontmatter valide — auto-découvertes par init-sanctum.py",
+    "First Breath de type configuration avec questions de découverte adaptées au domaine Android",
+    "Standing orders pertinents avec le canon pull-in et les valeurs bien adaptées au domaine",
+    "TOML corrigé et active — le fichier est maintenant parsable et valide",
+    "Persona traitée comme investissement — aucune recommandation de l'aplatir"
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "action": "Fix CREED-template.md literal \\n formatting and restore TOML integrity (already done)",
+      "resolves": [
+        "customization-1",
+        "leanness-3",
+        "sanctum-2"
+      ]
+    },
+    {
+      "rank": 2,
+      "action": "Trim SKILL.md bootloader to ~400 tokens: move persona voice to PERSONA-template.md, reduce Waking Mode to routing-only, trim frontmatter description",
+      "resolves": [
+        "architecture-1",
+        "agent-cohesion-1",
+        "sanctum-1"
+      ]
+    },
+    {
+      "rank": 3,
+      "action": "Remove memory-guidance.md and prompt-quality-canon.md from SKILL_ONLY_FILES in init-sanctum.py so the sanctum is self-contained (already done)",
+      "resolves": [
+        "enhancement-1"
+      ]
+    },
+    {
+      "rank": 4,
+      "action": "Remove Express path blocks from all three capability prompts and collapse numbered sequences to goal sentences",
+      "resolves": [
+        "leanness-1",
+        "leanness-2",
+        "leanness-4",
+        "leanness-5"
+      ]
+    },
+    {
+      "rank": 5,
+      "action": "Add compile-fix pipeline capability and dependency management capability",
+      "resolves": [
+        "agent-cohesion-2",
+        "enhancement-2"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "customization-1",
+      "lens": "customization",
+      "severity": "critical",
+      "title": "Invalid TOML syntax in name field — unclosed multi-line string",
+      "location": "customize.toml:13",
+      "evidence": "Field reads `name = \"\"\"\"` (four double quotes). TOML interprets `\"\"\"` as start of multi-line string; no closing `\"\"\"` exists. The entire customize.toml was unparseable. Now fixed to `name = \"\"`.",
+      "recommendation": "Use `name = \"\"` for empty string. Already fixed."
+    },
+    {
+      "id": "architecture-1",
+      "lens": "architecture",
+      "severity": "high",
+      "title": "Sanctum-bound content leaked into overweight bootloader",
+      "location": "SKILL.md:6-8, SKILL.md:65-71",
+      "evidence": "SKILL.md is 1133 tokens vs ~400-token guardrail. Persona voice block and detailed Waking Mode behavioral guidance belong in sanctum (PERSONA.md).",
+      "recommendation": "Move persona voice to PERSONA-template.md. Trim Waking Mode section to routing-only. Target ~400 tokens."
+    },
+    {
+      "id": "enhancement-1",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "Sanctum self-containment broken — runtime dependencies not copied",
+      "location": "scripts/init-sanctum.py:38",
+      "evidence": "memory-guidance.md and prompt-quality-canon.md in SKILL_ONLY_FILES are never copied to sanctum. Agent's CREED and Persistent Memory directive reference them at runtime.",
+      "recommendation": "Remove from SKILL_ONLY_FILES. Already done."
+    },
+    {
+      "id": "sanctum-1",
+      "lens": "sanctum-architecture",
+      "severity": "medium",
+      "title": "Sanctum-bound communication style leaked into bootloader SKILL.md",
+      "location": "SKILL.md:6-8",
+      "evidence": "1133 token bootloader carries full persona voice that belongs in sanctum.",
+      "recommendation": "Move to PERSONA-template.md."
+    },
+    {
+      "id": "sanctum-2",
+      "lens": "sanctum-architecture",
+      "severity": "medium",
+      "title": "Literal \\n sequences in CREED-template.md instead of actual newlines",
+      "location": "CREED-template.md:17,23,35,40",
+      "evidence": "Four sections use literal `\\n` escape sequences — renders as visible `\\n` in markdown.",
+      "recommendation": "Replace \\n with real newlines. Already done."
+    },
+    {
+      "id": "agent-cohesion-1",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "Bootloader SKILL.md leaks sanctum-bound content at 2.8x guardrail",
+      "location": "SKILL.md:6-8, SKILL.md:36-38",
+      "evidence": "1133 tokens vs ~400. Stay in Character section duplicates persona communication style belonging in sanctum.",
+      "recommendation": "Move Stay in Character detail to PERSONA.md."
+    },
+    {
+      "id": "agent-cohesion-2",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "Dependency management is a gap in the developer workflow",
+      "location": "references/implement.md, references/auto-fix.md, assets/CREED-template.md",
+      "evidence": "No capability to add/update dependencies. Auto-fix classifies 'missing dependencies' as complex errors to escalate.",
+      "recommendation": "Add manage-dependency capability or expand auto-fix."
+    },
+    {
+      "id": "enhancement-2",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "No compile-fix pipeline capability for expert/automator flow",
+      "location": "references/implement.md, references/compile-check.md, references/auto-fix.md",
+      "evidence": "Expert must manually loop: implement → compile-check → auto-fix → compile-check. No single-shot pipeline.",
+      "recommendation": "Add pipeline capability CFL that chains implement → compile → auto-fix → recompile → report."
+    },
+    {
+      "id": "enhancement-3",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "{bond-domain-sections} placeholder leaks into generated BOND.md",
+      "location": "assets/BOND-template.md:8",
+      "evidence": "Placeholder not in substitute_vars map — survives as raw literal text in generated BOND.md.",
+      "recommendation": "Replace with comment-style instruction. Already done."
+    },
+    {
+      "id": "determinism-1",
+      "lens": "determinism",
+      "severity": "low",
+      "title": "Prompt instructs model to scan for remaining {\\u2026} placeholders",
+      "location": "references/first-breath.md:73",
+      "evidence": "Instruction 'scanne les fichiers du sanctum pour les instructions {\\u2026} restantes' is a deterministic text-pattern scan the model does once at generation cost.",
+      "recommendation": "Add post-substitution validation to init-sanctum.py to flag remaining placeholders deterministically."
+    },
+    {
+      "id": "leanness-1",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "implement.md numbered sequence over-prescriptive",
+      "location": "references/implement.md:17-33",
+      "evidence": "4 numbered steps force sequential execution. Steps 3-4 are persona knowledge or already in output spec.",
+      "recommendation": "Collapse to goal sentences. Keep only the non-inferable skill-name mapping.",
+      "proposed_smallest": "Implement code from spec, findings, and UI spec. Output to phases/N/code/. Before writing, consult the relevant skill: navigation-3 | camera1-to-camerax | edge-to-edge | adaptive | styles | migrate-xml-views-to-jetpack-compose | appfunctions | verified-email | jetpack-compose-m3 | display-glasses-with-jetpack-compose-glimmer | play-billing-library-version-upgrade | engage-sdk-integration. Never invent an API.",
+      "predicted_delta": "Near-zero."
+    },
+    {
+      "id": "leanness-2",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "Express path blocks in all 3 capability prompts are defensive padding",
+      "location": "references/implement.md:35, references/compile-check.md:22, references/auto-fix.md:26",
+      "evidence": "Each capability carries an Express path describing default behavior the model would do anyway.",
+      "recommendation": "Delete all three Express path sections."
+    },
+    {
+      "id": "leanness-3",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "CREED-template.md uses literal \\n instead of actual line breaks",
+      "location": "assets/CREED-template.md:17,23,35,40",
+      "evidence": "Four bullet-list sections contain literal \\n characters.",
+      "recommendation": "Replace with real newlines. Already done.",
+      "proposed_smallest": null,
+      "predicted_delta": null
+    },
+    {
+      "id": "leanness-4",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "compile-check.md full version barely beats its absence",
+      "location": "references/compile-check.md:9-24",
+      "evidence": "24 lines / 174 tokens — only the build command and progress.md convention are non-inferable.",
+      "recommendation": "Collapse to: 'Run ./gradlew assembleDebug. On success, update progress.md. On failure, capture logs. Never claim it compiles without running the build.'",
+      "proposed_smallest": "Run ./gradlew assembleDebug. On success, update progress.md. On failure, capture logs. Never claim it compiles without running the build.",
+      "predicted_delta": "Near-zero."
+    },
+    {
+      "id": "leanness-5",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "auto-fix.md express path and process scaffolding are removable",
+      "location": "references/auto-fix.md:9-28",
+      "evidence": "5-step numbered process can collapse. Only non-inferable content is simple-vs-complex classification boundary and escalation format.",
+      "recommendation": "Keep classification rule with examples, escalation path, non-negotiable. Drop numbered scaffolding and express path.",
+      "proposed_smallest": "Fix simple compile errors (missing imports, wrong signatures, typos, resource references, wrong parameters). Complex errors (architecture, API incompatibility, missing deps, ambiguous) write to progress.md as blocked: compile. Never apply a fix you don't understand.",
+      "predicted_delta": "Small."
+    },
+    {
+      "id": "customization-2",
+      "lens": "customization",
+      "severity": "low",
+      "title": "name and title lack read-only-at-runtime comments",
+      "location": "customize.toml:13-14",
+      "evidence": "No comment noting these are install-time roster metadata, not runtime overrides.",
+      "recommendation": "Add inline comments: `name = \"\"  # read-only at runtime` and `title = \"..."
+    }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var SEVERITIES = ["critical", "high", "medium", "low"];
+  var SEV_LABEL = { critical: "Critical", high: "High", medium: "Medium", low: "Low" };
+  var GRADES = ["excellent", "good", "fair", "poor"];
+  var PLACEHOLDER_SUBJECT = "__PLACEHOLDER__";
+
+  var els = {
+    banner: document.getElementById("parse-banner"),
+    portrait: document.getElementById("portrait"),
+    overview: document.getElementById("overview"),
+    grade: document.getElementById("grade"),
+    verdict: document.getElementById("verdict"),
+    summaryText: document.getElementById("summary-text"),
+    counts: document.getElementById("counts"),
+    capabilities: document.getElementById("capabilities"),
+    lensVerdicts: document.getElementById("lens-verdicts"),
+    sanctum: document.getElementById("sanctum"),
+    experience: document.getElementById("experience"),
+    themes: document.getElementById("themes"),
+    strengths: document.getElementById("strengths"),
+    recommendations: document.getElementById("recommendations"),
+    toolbar: document.getElementById("toolbar"),
+    root: document.getElementById("findings-root"),
+    subject: document.getElementById("m-subject"),
+    generated: document.getElementById("m-generated"),
+    schema: document.getElementById("m-schema"),
+    selCount: document.getElementById("sel-count"),
+    btnCopy: document.getElementById("btn-copy"),
+    btnSelectAll: document.getElementById("btn-select-all"),
+    btnClear: document.getElementById("btn-clear"),
+    btnExpandAll: document.getElementById("btn-expand-all"),
+    btnCollapseAll: document.getElementById("btn-collapse-all"),
+    fallback: document.getElementById("fallback"),
+    fallbackText: document.getElementById("fallback-text"),
+    toast: document.getElementById("toast")
+  };
+
+  var selected = Object.create(null);
+  var findings = [];
+  var findingsById = Object.create(null);
+  var subjectPath = "";
+  var standards = null;
+
+  function showBanner(message) {
+    els.banner.textContent = message;
+    els.banner.classList.add("show");
+  }
+
+  function esc(value) {
+    var s = value == null ? "" : String(value);
+    return s.replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // Normalize an arbitrary parsed object against schema_version 2, supplying
+  // defaults so a partial or future island still renders. Unknown fields are
+  // ignored, not fatal. Severity counts are always derived from the findings
+  // array, never read from the island, so they cannot disagree with it. The
+  // agent blocks (agent_profile, capabilities, detailed_analysis, sanctum,
+  // experience) and the synthesis blocks (grade, summary, themes, strengths,
+  // recommendations) are OPTIONAL: each normalizes to an empty value that
+  // renders nothing rather than an empty panel or an error.
+  function normalize(raw) {
+    var obj = raw && typeof raw === "object" ? raw : {};
+    var rawFindings = Array.isArray(obj.findings) ? obj.findings : [];
+
+    var norm = {
+      schema_version: typeof obj.schema_version === "number" ? obj.schema_version : 2,
+      subject: obj.subject != null ? String(obj.subject) : "(unspecified)",
+      generated: obj.generated != null ? String(obj.generated) : "(unspecified)",
+      verdict: obj.verdict != null ? String(obj.verdict) : "(no verdict supplied)",
+      grade: GRADES.indexOf(String(obj.grade || "").toLowerCase()) >= 0
+        ? String(obj.grade).toLowerCase() : "",
+      summary: typeof obj.summary === "string" ? obj.summary : "",
+      standards: (obj.standards && typeof obj.standards === "object") ? {
+        canon: obj.standards.canon != null ? String(obj.standards.canon) : "",
+        principles: obj.standards.principles != null ? String(obj.standards.principles) : "",
+        scripts: obj.standards.scripts != null ? String(obj.standards.scripts) : ""
+      } : null,
+      themes: normalizeThemes(obj.themes),
+      strengths: normalizeStrengths(obj.strengths),
+      recommendations: normalizeRecommendations(obj.recommendations),
+      counts: { critical: 0, high: 0, medium: 0, low: 0 },
+      findings: [],
+      agent_profile: normalizeProfile(obj.agent_profile),
+      capabilities: normalizeCapabilities(obj.capabilities),
+      detailed_analysis: normalizeDetailed(obj.detailed_analysis),
+      sanctum: normalizeSanctum(obj.sanctum),
+      experience: normalizeExperience(obj.experience)
+    };
+
+    rawFindings.forEach(function (f, i) {
+      if (!f || typeof f !== "object") { return; }
+      var sev = SEVERITIES.indexOf(f.severity) >= 0 ? f.severity : "low";
+      norm.findings.push({
+        id: f.id != null ? String(f.id) : "finding-" + (i + 1),
+        lens: f.lens != null ? String(f.lens) : "(unknown)",
+        severity: sev,
+        title: f.title != null ? String(f.title) : "(untitled finding)",
+        location: f.location != null ? String(f.location) : "",
+        evidence: f.evidence != null ? String(f.evidence) : "",
+        recommendation: f.recommendation != null ? String(f.recommendation) : "",
+        proposed_smallest: f.proposed_smallest != null ? String(f.proposed_smallest) : "",
+        predicted_delta: f.predicted_delta != null ? String(f.predicted_delta) : ""
+      });
+      norm.counts[sev] += 1;
+    });
+
+    return norm;
+  }
+
+  function normalizeThemes(raw) {
+    if (!Array.isArray(raw)) { return []; }
+    var list = [];
+    raw.forEach(function (t) {
+      if (!t || typeof t !== "object") { return; }
+      var ids = [];
+      if (Array.isArray(t.finding_ids)) {
+        t.finding_ids.forEach(function (id) { if (id != null) { ids.push(String(id)); } });
+      }
+      var title = t.title != null ? String(t.title) : "";
+      if (!title && !ids.length) { return; }
+      list.push({
+        title: title || "(untitled theme)",
+        root_cause: t.root_cause != null ? String(t.root_cause) : "",
+        action: t.action != null ? String(t.action) : "",
+        finding_ids: ids
+      });
+    });
+    return list;
+  }
+
+  function normalizeStrengths(raw) {
+    if (!Array.isArray(raw)) { return []; }
+    var list = [];
+    raw.forEach(function (s) {
+      if (typeof s === "string" && s) { list.push(s); }
+      else if (s && typeof s === "object" && s.title) {
+        list.push(String(s.title) + (s.detail ? " — " + String(s.detail) : ""));
+      }
+    });
+    return list;
+  }
+
+  function normalizeRecommendations(raw) {
+    if (!Array.isArray(raw)) { return []; }
+    var list = [];
+    raw.forEach(function (r, i) {
+      if (!r || typeof r !== "object") { return; }
+      var action = r.action != null ? String(r.action) : "";
+      if (!action) { return; }
+      var resolves = "";
+      if (Array.isArray(r.resolves)) { resolves = r.resolves.map(String).join(", "); }
+      else if (typeof r.resolves === "number") { resolves = r.resolves + " findings"; }
+      else if (r.resolves != null) { resolves = String(r.resolves); }
+      list.push({
+        rank: typeof r.rank === "number" ? r.rank : i + 1,
+        action: action,
+        resolves: resolves
+      });
+    });
+    list.sort(function (a, b) { return a.rank - b.rank; });
+    return list;
+  }
+
+  // Optional agent_profile portrait: name/title/icon/agent_type/mission.
+  // Returns null when nothing usable is present, so the portrait stays hidden.
+  function normalizeProfile(raw) {
+    if (!raw || typeof raw !== "object") { return null; }
+    var p = {
+      name: raw.name != null ? String(raw.name) : "",
+      title: raw.title != null ? String(raw.title) : "",
+      icon: raw.icon != null ? String(raw.icon) : "",
+      agent_type: raw.agent_type != null ? String(raw.agent_type) : "",
+      mission: raw.mission != null ? String(raw.mission) : ""
+    };
+    if (!p.name && !p.title && !p.mission && !p.agent_type) { return null; }
+    return p;
+  }
+
+  // Optional capability dashboard: a list of { name, kind, note }.
+  // Returns null when empty or absent.
+  function normalizeCapabilities(raw) {
+    if (!Array.isArray(raw)) { return null; }
+    var list = [];
+    raw.forEach(function (c) {
+      if (!c || typeof c !== "object") { return; }
+      var name = c.name != null ? String(c.name) : "";
+      if (!name) { return; }
+      list.push({
+        name: name,
+        kind: c.kind != null ? String(c.kind) : "",
+        note: c.note != null ? String(c.note) : ""
+      });
+    });
+    return list.length ? list : null;
+  }
+
+  // Optional detailed_analysis: a map of lens name to one-line verdict.
+  // Returns null when empty or absent.
+  function normalizeDetailed(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) { return null; }
+    var entries = [];
+    Object.keys(raw).forEach(function (key) {
+      var value = raw[key];
+      if (value == null || typeof value === "object") { return; }
+      entries.push({ lens: key, verdict: String(value) });
+    });
+    return entries.length ? entries : null;
+  }
+
+  // Optional sanctum block, shown only for memory/autonomous agents.
+  // Returns null when absent or explicitly marked not present.
+  function normalizeSanctum(raw) {
+    if (!raw || typeof raw !== "object") { return null; }
+    if (raw.present === false) { return null; }
+    var files = [];
+    if (Array.isArray(raw.files)) {
+      raw.files.forEach(function (f) { if (f != null) { files.push(String(f)); } });
+    }
+    var s = {
+      location: raw.location != null ? String(raw.location) : "",
+      files: files,
+      note: raw.note != null ? String(raw.note) : ""
+    };
+    if (!s.location && !s.files.length && !s.note) { return null; }
+    return s;
+  }
+
+  // Optional experience block: journeys plus a headless note. Returns null when
+  // neither is usable.
+  function normalizeExperience(raw) {
+    if (!raw || typeof raw !== "object") { return null; }
+    var journeys = [];
+    if (Array.isArray(raw.journeys)) {
+      raw.journeys.forEach(function (j) {
+        if (!j || typeof j !== "object") { return; }
+        var name = j.name != null ? String(j.name) : "";
+        var steps = j.steps != null ? String(j.steps) : "";
+        if (!name && !steps) { return; }
+        journeys.push({ name: name, steps: steps });
+      });
+    }
+    var headless = raw.headless != null ? String(raw.headless) : "";
+    if (!journeys.length && !headless) { return null; }
+    return { journeys: journeys, headless: headless };
+  }
+
+  function renderOverview(data) {
+    els.subject.textContent = data.subject;
+    els.generated.textContent = data.generated;
+    els.schema.textContent = String(data.schema_version);
+    els.verdict.textContent = data.verdict;
+
+    if (data.grade) {
+      els.grade.textContent = data.grade;
+      els.grade.className = "grade g-" + data.grade;
+      els.grade.hidden = false;
+    }
+    if (data.summary) {
+      els.summaryText.textContent = data.summary;
+      els.summaryText.hidden = false;
+    }
+
+    els.counts.innerHTML = "";
+    SEVERITIES.forEach(function (s) {
+      var pill = document.createElement("span");
+      pill.className = "pill";
+      pill.innerHTML =
+        '<span class="dot ' + s + '"></span>' +
+        '<span class="lbl">' + SEV_LABEL[s] + '</span>' +
+        '<span class="n">' + data.counts[s] + "</span>";
+      els.counts.appendChild(pill);
+    });
+    els.overview.hidden = false;
+  }
+
+  // Each agent-block renderer leaves its section hidden when its data is null,
+  // so a stateless agent (no sanctum) or a minimal island never shows a blank
+  // panel and never throws.
+  function renderProfile(profile) {
+    if (!profile) { els.portrait.hidden = true; return; }
+    var typeTag = profile.agent_type
+      ? '<span class="type">' + esc(profile.agent_type) + "</span>"
+      : "";
+    var mission = profile.mission
+      ? '<div class="mission">' + esc(profile.mission) + "</div>"
+      : "";
+    els.portrait.innerHTML =
+      '<div class="icon">' + (profile.icon ? esc(profile.icon) : "🤖") + "</div>" +
+      '<div class="who">' +
+      '<div class="name">' + esc(profile.name || "(unnamed agent)") + "</div>" +
+      (profile.title ? '<div class="title">' + esc(profile.title) + "</div>" : "") +
+      mission +
+      typeTag +
+      "</div>";
+    els.portrait.hidden = false;
+  }
+
+  function renderCapabilities(list) {
+    if (!list) { els.capabilities.hidden = true; return; }
+    var items = list.map(function (c) {
+      return "<li>" +
+        '<span class="cap-name">' + esc(c.name) + "</span>" +
+        (c.kind ? '<span class="cap-kind">' + esc(c.kind) + "</span>" : "") +
+        (c.note ? '<span class="cap-note">' + esc(c.note) + "</span>" : "") +
+        "</li>";
+    }).join("");
+    els.capabilities.innerHTML =
+      "<h2>Capabilities</h2><ul class=\"cap-list\">" + items + "</ul>";
+    els.capabilities.hidden = false;
+  }
+
+  function renderLensVerdicts(entries) {
+    if (!entries) { els.lensVerdicts.hidden = true; return; }
+    var rows = entries.map(function (e) {
+      return "<dt>" + esc(e.lens) + "</dt><dd>" + esc(e.verdict) + "</dd>";
+    }).join("");
+    els.lensVerdicts.innerHTML =
+      "<h2>Per-lens verdicts</h2><dl class=\"kv\">" + rows + "</dl>";
+    els.lensVerdicts.hidden = false;
+  }
+
+  function renderSanctum(s) {
+    if (!s) { els.sanctum.hidden = true; return; }
+    var rows = "";
+    if (s.location) {
+      rows += "<dt>Location</dt><dd><code>" + esc(s.location) + "</code></dd>";
+    }
+    if (s.files.length) {
+      rows += "<dt>Sanctum files</dt><dd>" +
+        s.files.map(function (f) { return '<span class="mono">' + esc(f) + "</span>"; }).join(" ") +
+        "</dd>";
+    }
+    if (s.note) {
+      rows += "<dt>Note</dt><dd>" + esc(s.note) + "</dd>";
+    }
+    els.sanctum.innerHTML = "<h2>Sanctum (runtime memory)</h2><dl class=\"kv\">" + rows + "</dl>";
+    els.sanctum.hidden = false;
+  }
+
+  function renderExperience(exp) {
+    if (!exp) { els.experience.hidden = true; return; }
+    var html = "<h2>Experience</h2>";
+    if (exp.journeys.length) {
+      html += exp.journeys.map(function (j) {
+        return '<div class="journey">' +
+          '<div class="j-name">' + esc(j.name || "(unnamed journey)") + "</div>" +
+          (j.steps ? '<div class="j-steps">' + esc(j.steps) + "</div>" : "") +
+          "</div>";
+      }).join("");
+    }
+    if (exp.headless) {
+      html += '<dl class="kv" style="margin-top:12px"><dt>Headless</dt><dd>' +
+        esc(exp.headless) + "</dd></dl>";
+    }
+    els.experience.innerHTML = html;
+    els.experience.hidden = false;
+  }
+
+  // Every copied fix prompt opens by anchoring the fixing session to the same
+  // standards that produced the findings, so the fix is held to the bar too.
+  function standardsPreamble() {
+    if (!standards || !standards.canon) { return []; }
+    var bar = standards.canon + (standards.principles ? " and " + standards.principles : "");
+    var lines = [
+      "Hold " + bar + " as the bar for every line you change — a fix that adds ceremony is a new finding, not a fix."
+    ];
+    if (standards.scripts) {
+      lines.push("If the fix adds or changes scripts, follow " + standards.scripts + ".");
+    }
+    lines.push("");
+    return lines;
+  }
+
+  function composeThemePrompt(theme, resolved) {
+    var lines = standardsPreamble();
+    lines.push("Fix the following theme in " + subjectPath + ": " + theme.title);
+    lines.push("");
+    if (theme.root_cause) { lines.push("Root cause: " + theme.root_cause); }
+    if (theme.action) { lines.push("Fix: " + theme.action); }
+    if (resolved.length) {
+      lines.push("");
+      lines.push("Findings to address:");
+      resolved.forEach(function (f, i) {
+        lines.push((i + 1) + ". " + f.title);
+        if (f.location) { lines.push("   Location: " + f.location); }
+        if (f.evidence) { lines.push("   Evidence: " + f.evidence); }
+        if (f.recommendation) { lines.push("   Recommendation: " + f.recommendation); }
+      });
+    }
+    return lines.join("\n") + "\n";
+  }
+
+  function renderThemes(themes) {
+    if (!themes.length) { els.themes.hidden = true; return; }
+    els.themes.innerHTML = "<h2>Themes</h2>";
+    themes.forEach(function (t) {
+      var resolved = t.finding_ids
+        .map(function (id) { return findingsById[id]; })
+        .filter(function (f) { return !!f; });
+      var items = resolved.map(function (f) {
+        return '<div class="t-finding"><span class="mono">' + esc(f.id) + "</span> " +
+          esc(f.title) +
+          (f.location ? ' · <span class="mono">' + esc(f.location) + "</span>" : "") +
+          "</div>";
+      }).join("");
+
+      var node = document.createElement("div");
+      node.className = "theme";
+      node.innerHTML =
+        '<div class="t-head"><span class="t-title">' + esc(t.title) + "</span>" +
+        '<button class="small t-fix">Fix This Theme</button></div>' +
+        (t.root_cause ? '<div class="t-cause">Root cause: ' + esc(t.root_cause) + "</div>" : "") +
+        (t.action ? '<div class="t-action"><b>Fix:</b> ' + esc(t.action) + "</div>" : "") +
+        (items ? '<div class="t-findings">' + items + "</div>" : "");
+      node.querySelector(".t-fix").addEventListener("click", function () {
+        copyText(composeThemePrompt(t, resolved));
+      });
+      els.themes.appendChild(node);
+    });
+    els.themes.hidden = false;
+  }
+
+  function renderStrengths(list) {
+    if (!list.length) { els.strengths.hidden = true; return; }
+    els.strengths.innerHTML =
+      "<h2>Strengths</h2><ul class=\"strength-list\">" +
+      list.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") +
+      "</ul>";
+    els.strengths.hidden = false;
+  }
+
+  function renderRecommendations(recs) {
+    if (!recs.length) { els.recommendations.hidden = true; return; }
+    var html = "<h2>Recommendations</h2>";
+    recs.forEach(function (r) {
+      html += '<div class="rec"><span class="rank">#' + esc(String(r.rank)) + "</span>" +
+        esc(r.action) +
+        (r.resolves ? '<span class="resolves">resolves: ' + esc(r.resolves) + "</span>" : "") +
+        "</div>";
+    });
+    els.recommendations.innerHTML = html;
+    els.recommendations.hidden = false;
+  }
+
+  function renderNoFindings() {
+    els.root.innerHTML =
+      '<div class="no-findings">' +
+      '<div class="big">No findings</div>' +
+      "<div>The scanners returned a clean pass for this subject.</div>" +
+      "</div>";
+  }
+
+  function findingNode(f) {
+    var node = document.createElement("div");
+    node.className = "finding sev-" + f.severity;
+    node.setAttribute("data-id", f.id);
+
+    var sub =
+      esc(f.lens) +
+      (f.location ? ' · <span class="mono">' + esc(f.location) + "</span>" : "");
+
+    var rows =
+      "<dt>Lens</dt><dd>" + esc(f.lens) + "</dd>" +
+      (f.location ? "<dt>Location</dt><dd><code>" + esc(f.location) + "</code></dd>" : "") +
+      (f.evidence ? "<dt>Evidence</dt><dd>" + esc(f.evidence) + "</dd>" : "") +
+      (f.recommendation ? "<dt>Recommendation</dt><dd>" + esc(f.recommendation) + "</dd>" : "") +
+      (f.proposed_smallest ? "<dt>Proposed smallest</dt><dd>" + esc(f.proposed_smallest) + "</dd>" : "") +
+      (f.predicted_delta ? "<dt>Predicted delta</dt><dd>" + esc(f.predicted_delta) + "</dd>" : "");
+
+    node.innerHTML =
+      '<div class="row">' +
+      '<input type="checkbox" class="chk" aria-label="Select finding">' +
+      '<div class="head">' +
+      '<div class="title">' + esc(f.title) + "</div>" +
+      '<div class="sub">' + sub + "</div>" +
+      "</div>" +
+      '<span class="tag">' + SEV_LABEL[f.severity] + "</span>" +
+      '<span class="caret">▸</span>' +
+      "</div>" +
+      '<div class="body"><dl>' + rows + "</dl></div>";
+
+    var chk = node.querySelector(".chk");
+    chk.checked = !!selected[f.id];
+    chk.addEventListener("change", function () {
+      if (chk.checked) { selected[f.id] = true; } else { delete selected[f.id]; }
+      updateSelection();
+    });
+
+    var head = node.querySelector(".head");
+    var caret = node.querySelector(".caret");
+    function toggle() { node.classList.toggle("open"); }
+    head.addEventListener("click", toggle);
+    caret.addEventListener("click", toggle);
+
+    return node;
+  }
+
+  function renderFindings(list) {
+    els.root.innerHTML = "";
+    if (list.length === 0) {
+      renderNoFindings();
+      els.toolbar.hidden = true;
+      return;
+    }
+    els.toolbar.hidden = false;
+
+    SEVERITIES.forEach(function (sev) {
+      var group = list.filter(function (f) { return f.severity === sev; });
+      if (group.length === 0) { return; }
+      var wrap = document.createElement("div");
+      wrap.className = "group";
+      var h = document.createElement("h2");
+      h.innerHTML = '<span class="dot ' + sev + '"></span>' + SEV_LABEL[sev] + " (" + group.length + ")";
+      wrap.appendChild(h);
+      group.forEach(function (f) { wrap.appendChild(findingNode(f)); });
+      els.root.appendChild(wrap);
+    });
+  }
+
+  function updateSelection() {
+    var n = Object.keys(selected).length;
+    els.selCount.textContent = n + " selected";
+    els.btnCopy.disabled = n === 0;
+  }
+
+  function composePrompt() {
+    var picked = findings.filter(function (f) { return selected[f.id]; });
+    if (picked.length === 0) { return ""; }
+    var lines = standardsPreamble();
+    lines.push("Fix the following issues in " + subjectPath + ":");
+    lines.push("");
+    picked.forEach(function (f, i) {
+      lines.push((i + 1) + ". " + f.title);
+      if (f.location) { lines.push("   Location: " + f.location); }
+      if (f.evidence) { lines.push("   Evidence: " + f.evidence); }
+      if (f.recommendation) { lines.push("   Recommendation: " + f.recommendation); }
+      if (f.proposed_smallest) { lines.push("   Proposed smallest: " + f.proposed_smallest); }
+      lines.push("");
+    });
+    return lines.join("\n").replace(/\n+$/, "\n");
+  }
+
+  function showToast(text) {
+    els.toast.textContent = text;
+    els.toast.classList.add("show");
+    setTimeout(function () { els.toast.classList.remove("show"); }, 1600);
+  }
+
+  function fallbackCopy(text) {
+    els.fallbackText.value = text;
+    els.fallback.classList.add("show");
+    els.fallbackText.focus();
+    els.fallbackText.select();
+    try {
+      var ok = document.execCommand && document.execCommand("copy");
+      if (ok) {
+        showToast("Copied");
+        return;
+      }
+    } catch (e) { /* fall through to manual */ }
+    showToast("Copy the text shown below");
+  }
+
+  function copyText(text) {
+    if (!text) { return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { showToast("Copied"); },
+        function () { fallbackCopy(text); }
+      );
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function doCopy() {
+    copyText(composePrompt());
+  }
+
+  function wireToolbar() {
+    els.btnCopy.addEventListener("click", doCopy);
+    els.btnSelectAll.addEventListener("click", function () {
+      findings.forEach(function (f) { selected[f.id] = true; });
+      document.querySelectorAll(".finding .chk").forEach(function (c) { c.checked = true; });
+      updateSelection();
+    });
+    els.btnClear.addEventListener("click", function () {
+      selected = Object.create(null);
+      document.querySelectorAll(".finding .chk").forEach(function (c) { c.checked = false; });
+      els.fallback.classList.remove("show");
+      updateSelection();
+    });
+    els.btnExpandAll.addEventListener("click", function () {
+      document.querySelectorAll(".finding").forEach(function (n) { n.classList.add("open"); });
+    });
+    els.btnCollapseAll.addEventListener("click", function () {
+      document.querySelectorAll(".finding").forEach(function (n) { n.classList.remove("open"); });
+    });
+  }
+
+  function init() {
+    var island = document.getElementById("report-data");
+    var parsed;
+    try {
+      if (!island) { throw new Error("report-data island element not found"); }
+      parsed = JSON.parse(island.textContent);
+    } catch (err) {
+      showBanner(
+        "Could not parse the report data island.\n\n" +
+        "Error: " + (err && err.message ? err.message : String(err)) + "\n\n" +
+        "The findings could not be rendered. The JSON inside the " +
+        'report-data island (the application/json script tag) is malformed.'
+      );
+      return;
+    }
+
+    var data = normalize(parsed);
+
+    if (data.subject === PLACEHOLDER_SUBJECT) {
+      els.subject.textContent = data.subject;
+      showBanner(
+        "This is the unfilled report shell.\n\n" +
+        "The report-data island still carries the placeholder subject, so " +
+        "there are no findings here. Generate a real report with " +
+        "scripts/render_report.py."
+      );
+      return;
+    }
+
+    findings = data.findings;
+    subjectPath = data.subject;
+    standards = data.standards;
+    findingsById = Object.create(null);
+    findings.forEach(function (f) { findingsById[f.id] = f; });
+
+    renderProfile(data.agent_profile);
+    renderOverview(data);
+    renderCapabilities(data.capabilities);
+    renderLensVerdicts(data.detailed_analysis);
+    renderSanctum(data.sanctum);
+    renderExperience(data.experience);
+    renderThemes(data.themes);
+    renderStrengths(data.strengths);
+    renderRecommendations(data.recommendations);
+    renderFindings(findings);
+    wireToolbar();
+    updateSelection();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

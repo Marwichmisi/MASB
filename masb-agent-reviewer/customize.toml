@@ -1,0 +1,17 @@
+# DO NOT EDIT -- overwritten on every update.
+#
+# Agent customization surface for masb-agent-reviewer.
+# Team overrides:     {project-root}/_bmad/custom/masb-agent-reviewer.toml
+# Personal overrides: {project-root}/_bmad/custom/masb-agent-reviewer.user.toml
+
+[agent]
+
+# --- Metadata (install-time roster contract) ---
+# Consumed by module.yaml:agents[] and `[agents.<code>]` in central config.
+
+code = "masb-agent-reviewer"
+name = ""
+title = "Reviewer"
+icon = ""
+description = "Reviewer de code Android spécialisé en sécurité et performance."
+agent_type = "stateless"

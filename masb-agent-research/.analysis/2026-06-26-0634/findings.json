@@ -1,0 +1,368 @@
+{
+  "schema_version": 2,
+  "subject": "masb-agent-research",
+  "generated": "2026-06-26",
+  "verdict": "Solid foundational agent with clear persona-capability alignment but multiple high-severity issues around missing headless mode, ceremony overhead, a broken reference, and activation behavior leaking from bootloader. One critical finding: CAPABILITIES template absent from assets/.",
+  "grade": "fair",
+  "summary": "masb-agent-research is a well-structured memory agent with strong persona coherence: it knows exactly who it is (expert en veille technique Android) and what it does (research-patterns, enrich-spec, verify-approach). The primary opportunities are reducing activation ceremony for power users, adding a headless/fast-lookup path, resolving the broken capability-authoring.md reference, and trimming bootloader content back into the sanctum. The persona was treated as investment and was never flagged as waste.",
+  "standards": {
+    "canon": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/prompt-quality-canon.md",
+    "principles": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/agent-quality-principles.md",
+    "scripts": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/script-standards.md"
+  },
+  "agent_profile": {
+    "name": "",
+    "title": "Expert en Veille Technique",
+    "icon": "🔍",
+    "agent_type": "memory",
+    "mission": "Trouver les patterns, APIs et bonnes pratiques officiels qui rendent chaque phase Android implémentable -- sans jamais inventer ce que la documentation ne dit pas."
+  },
+  "capabilities": [
+    { "name": "research-patterns", "kind": "prompt", "note": "Recherche patterns/APIs/bonnes pratiques pour une phase, produit findings.md" },
+    { "name": "enrich-spec", "kind": "prompt", "note": "Enrichit la spec avec recommandations sourcées via enrichment-proposal.md" },
+    { "name": "verify-approach", "kind": "prompt", "note": "Vérifie conformité d'une approche selon skills officiels, produit conformity-report.md" }
+  ],
+  "detailed_analysis": {
+    "leanness": "Lean overall; three curseur blocks and one role meta-explanation repeat principles already in CREED but none constitute whole-capability ceremony.",
+    "architecture": "Solid memory agent topology and activation spine. One high finding: capability-authoring.md reference does not exist.",
+    "determinism": "2 determinism leaks found: structural merge rules in prompt (high), template placeholder scanning in prompt (low). No intelligence leaks.",
+    "customization": "customize.toml well-structured for memory agent. One medium finding: secondary config mechanism in init-sanctum.py.",
+    "enhancement": "Strong domain framing. High findings: no headless mode, no wake.py failure recovery, no fast-lookup path, over-ceremonied daily waking.",
+    "agent-cohesion": "Persona and capabilities align well. Medium tension between CREED boundary and enrich-spec's pattern recommendations.",
+    "sanctum-architecture": "Three Laws and Sacred Truth present. Critical: CAPABILITIES template missing from assets/. High: activation behavior leaking from bootloader."
+  },
+  "sanctum": {
+    "present": true,
+    "location": "{project-root}/_bmad/memory/masb-agent-research/",
+    "files": ["INDEX", "PERSONA", "CREED", "BOND", "MEMORY", "CAPABILITIES"],
+    "note": "Sanctum is the built agent's runtime memory, distinct from the builder's .memlog.md"
+  },
+  "experience": {
+    "journeys": [
+      { "name": "First Breath", "steps": "Scaffold sanctum via init-sanctum.py, discovery questions (working style, research preferences), identity naming, capability introduction, tool setup. Configuration-style with 5 domain questions + urgency detection." },
+      { "name": "Waking (expert)", "steps": "wake.py loads sanctum → become yourself → bind standing rules → Waking Mode with greeting. No fast path for returning experts." },
+      { "name": "Phase research", "steps": "Architecte activates phase → research-patterns consumes spec.md → produces findings.md → enrich-spec proposes enhancements → verify-approach checks compliance." }
+    ],
+    "headless": "No headless mode available. All three capabilities require full conversational activation cycle."
+  },
+  "themes": [
+    {
+      "title": "Missing headless and fast-lookup paths limit real-world utility",
+      "root_cause": "The agent was designed exclusively for the full MASB phase workflow with no shortcuts for returning experts or automators. All three capabilities require a phase context and produce phase-scoped files. Activation ceremony fires every session regardless of user expertise.",
+      "finding_ids": ["enhancement-1", "enhancement-3", "enhancement-4", "enhancement-5"],
+      "action": "Add a `quick-query` capability for inline sourced answers. Add `--headless` flag to wake.py. Introduce a stored preference in BOND.md for ceremony level."
+    },
+    {
+      "title": "Bootloader carries sanctum-bound content",
+      "root_cause": "The SKILL.md On Activation section (lines 53-82) includes detailed mode-routing behavior, greeting scripts, and capability-style instructions that belong in sanctum templates per the bootloader-is-lean-by-design principle.",
+      "finding_ids": ["sanctum-architecture-2", "enhancement-4", "enhancement-6"],
+      "action": "Trim SKILL.md activation to the four-step routing skeleton only. Move greeting, pending-sparks handling, and capability-offer instructions into sanctum PERSONA or CAPABILITIES."
+    },
+    {
+      "title": "Deterministic work delegated to LLM instead of scripts",
+      "root_cause": "Structural merge rules for config resolution and placeholder scanning in First Breath are described as prompt instructions when they are deterministic operations better served by scripts.",
+      "finding_ids": ["determinism-1", "determinism-2", "customization-1"],
+      "action": "Replace structural merge fallback in SKILL.md with a script call. Move placeholder scanning from First Breath into init-sanctum.py as a post-processing step."
+    },
+    {
+      "title": "Capability prompts contain role boundaries already in CREED",
+      "root_cause": "The curseur blocks and role meta-explanations in research-patterns.md, enrich-spec.md, and verify-approach.md restate principles already encoded in CREED (Vérité sourcée, Humilité technique, boundaries). The persona already governs these behaviors.",
+      "finding_ids": ["leanness-1", "leanness-2", "leanness-3", "leanness-4", "leanness-5", "agent-cohesion-1"],
+      "action": "Trim redundant role carving from capability prompts. Keep only the artifact specification, the consumer, and the non-obvious nuance. Resolve the CREED boundary contradiction with enrich-spec."
+    }
+  ],
+  "strengths": [
+    "Clear, well-defined persona (expert en veille technique, documentation-oriented) — the identity seed, CREED values, and communication style are coherent and specific to the research domain",
+    "Capabilities have clear artifacts, consumers, and quality gates (curseur pattern) — each one produces a distinct output consumed by a named downstream agent",
+    "First Breath uses config style with domain-specific discovery questions tailored to Android research preferences",
+    "Scripts are syntactically valid, wake.py correctly routes Waking vs First Breath mode, init-sanctum.py auto-discovers capabilities from frontmatter",
+    "customize.toml correctly identifies sanctum as primary customization surface for a memory agent",
+    "Sanctum templates include meaningful CREED values, standing orders, and dominion boundaries"
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "action": "Create CAPABILITIES-template.md in assets/ to satisfy the standard 6-template contract and fix the critical sanctum architecture finding",
+      "resolves": ["sanctum-architecture-1"]
+    },
+    {
+      "rank": 2,
+      "action": "Add a `quick-query` capability for inline Android pattern lookups without phase context, and add `--headless` support to wake.py",
+      "resolves": ["enhancement-1", "enhancement-3", "enhancement-4"]
+    },
+    {
+      "rank": 3,
+      "action": "Trim SKILL.md On Activation to the four-step routing skeleton only; move greeting, pending-sparks, and capability-offer behavior into sanctum templates",
+      "resolves": ["sanctum-architecture-2", "enhancement-4"]
+    },
+    {
+      "rank": 4,
+      "action": "Create references/capability-authoring.md or remove the dead reference from init-sanctum.py's generate_capabilities_md template",
+      "resolves": ["architecture-1"]
+    },
+    {
+      "rank": 5,
+      "action": "Replace the structural merge fallback prompt in SKILL.md with a script call (scripts/merge_config.py)",
+      "resolves": ["determinism-1"]
+    },
+    {
+      "rank": 6,
+      "action": "Document wake.py failure fallback analogous to the customization resolver fallback",
+      "resolves": ["enhancement-2"]
+    },
+    {
+      "rank": 7,
+      "action": "Trim redundant curseur blocks and role meta-explanations from capability prompts; add seed examples to BOND-template.md",
+      "resolves": ["leanness-1", "leanness-2", "leanness-3", "leanness-4", "leanness-5", "sanctum-architecture-3"]
+    }
+  ],
+  "findings": [
+    {
+      "id": "sanctum-architecture-1",
+      "lens": "sanctum-architecture",
+      "severity": "critical",
+      "title": "CAPABILITIES template missing from assets",
+      "location": "assets/",
+      "evidence": "All 6 standard templates must exist - INDEX, PERSONA, CREED, BOND, MEMORY, CAPABILITIES. CAPABILITIES-template.md is absent (auto-generated from frontmatter). TEMPLATE_FILES list omits it.",
+      "recommendation": "Add CAPABILITIES-template.md to assets/ or update to stub if auto-generation is the approved approach"
+    },
+    {
+      "id": "architecture-1",
+      "lens": "architecture",
+      "severity": "high",
+      "title": "Referenced file references/capability-authoring.md does not exist",
+      "location": "scripts/init-sanctum.py:161",
+      "evidence": "init-sanctum.py embeds 'Load references/capability-authoring.md' into generated CAPABILITIES.md. The file does not exist in references/ or anywhere in the skill bundle.",
+      "recommendation": "Create references/capability-authoring.md or remove the dead reference from init-sanctum.py's generate_capabilities_md template"
+    },
+    {
+      "id": "determinism-1",
+      "lens": "determinism",
+      "severity": "high",
+      "title": "Structural merge rules delegated to LLM fallback",
+      "location": "SKILL.md:59-61",
+      "evidence": "Prompt instructs LLM to manually apply structural merge rules across config files. Precise deterministic data-structure work.",
+      "recommendation": "Replace fallback with script call (uv run scripts/merge_config.py)"
+    },
+    {
+      "id": "enhancement-1",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "No headless/automation mode",
+      "location": "SKILL.md:65-81, scripts/wake.py",
+      "evidence": "All capabilities output files but activation always requires full persona cycle. wake.py has --pulse but no --headless flag.",
+      "recommendation": "Add --headless flag to wake.py that outputs identity silently and skips greeting ceremony"
+    },
+    {
+      "id": "enhancement-2",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "No recovery path when wake.py fails",
+      "location": "SKILL.md:67",
+      "evidence": "SKILL.md mandates uv run scripts/wake.py with no fallback if uv unavailable or Python version missing.",
+      "recommendation": "Document manual fallback for wake.py failure analogous to customization resolver fallback"
+    },
+    {
+      "id": "enhancement-3",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "No fast-lookup/quick-query capability",
+      "location": "references/research-patterns.md, references/enrich-spec.md, references/verify-approach.md",
+      "evidence": "All capabilities tied to phase workflow - require phase number N, spec file, produce output to masb-workspace/phases/N/.",
+      "recommendation": "Add fourth capability quick-query that returns inline sourced answer without phase context"
+    },
+    {
+      "id": "enhancement-4",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "Daily waking ceremony over-applied",
+      "location": "SKILL.md:65-81",
+      "evidence": "Every session requires full ceremony - resolve customization, wake.py, become yourself, bind rules, execute Waking Mode with scripted greeting. No acceleration path for returning experts.",
+      "recommendation": "Introduce --fast flag or stored preference in BOND.md that skips greeting ceremony"
+    },
+    {
+      "id": "sanctum-architecture-2",
+      "lens": "sanctum-architecture",
+      "severity": "high",
+      "title": "Activation behavior content leaking into bootloader",
+      "location": "SKILL.md:53-82",
+      "evidence": "On Activation section contains mode-routing behavior, greeting scripts, pending-sparks handling, capability instructions - belongs in sanctum.",
+      "recommendation": "Move mode-specific behavior into sanctum templates, keep only routing skeleton in bootloader"
+    },
+    {
+      "id": "leanness-4",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "Curseur ceremony in two capability prompts restates persona principles",
+      "location": "references/research-patterns.md + references/verify-approach.md",
+      "evidence": "Both files end with Le curseur paragraph re-teaching honesty/sourcing principles already in CREED.",
+      "recommendation": "Replace with single terse line per file where non-obvious nuance exists, or remove entirely",
+      "proposed_smallest": "research-patterns.md: 'Marque comme hypothèse toute recommandation non sourcée depuis un skill officiel.' / verify-approach.md: remove - CREED already covers honesty.",
+      "predicted_delta": "None. CREED governs the same behaviors."
+    },
+    {
+      "id": "agent-cohesion-1",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "Boundary contradiction between CREED and enrich-spec capability",
+      "location": "assets/CREED-template.md vs references/enrich-spec.md",
+      "evidence": "CREED says do not propose architecture but enrich-spec instructs agent to propose 'Patterns d'implémentation recommandés'.",
+      "recommendation": "Relax CREED boundary with carve-out for sourced technical recommendations, or narrow enrich-spec to catalog options only"
+    },
+    {
+      "id": "agent-cohesion-2",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "No handling for missing external skills",
+      "location": "references/research-patterns.md",
+      "evidence": "research-patterns hardcodes context7-cli, android-cli, domain skills as sources but has no fallback when skills are not installed.",
+      "recommendation": "Add skill-provisioning detection as activation step or capability"
+    },
+    {
+      "id": "customization-1",
+      "lens": "customization",
+      "severity": "medium",
+      "title": "Secondary config mechanism reads config.yaml in init-sanctum.py",
+      "location": "scripts/init-sanctum.py",
+      "evidence": "init-sanctum.py reads _bmad/config.yaml for user_name/communication_language, creating parallel surface outside customize.toml.",
+      "recommendation": "Remove config.yaml codepath from init-sanctum.py; set defaults conversationally during First Breath"
+    },
+    {
+      "id": "enhancement-5",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "First Breath too ceremonious for action-oriented user",
+      "location": "references/first-breath.md",
+      "evidence": "5 discovery questions + identity + personality + capabilities + tools before research help. Urgency detection vague.",
+      "recommendation": "Define concrete urgency signals, add --minimal-setup flag"
+    },
+    {
+      "id": "enhancement-6",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "Script path resolution ambiguous",
+      "location": "SKILL.md",
+      "evidence": "Script calls use bare relative paths (uv run scripts/wake.py) with no {skill-root}/ prefix.",
+      "recommendation": "Prefix all script references with {skill-root}/"
+    },
+    {
+      "id": "sanctum-architecture-3",
+      "lens": "sanctum-architecture",
+      "severity": "medium",
+      "title": "BOND template seeds are empty placeholders",
+      "location": "assets/BOND-template.md",
+      "evidence": "Domain sections exist but all seed content is {à découvrir}. Things to Remember and Things to Avoid are empty.",
+      "recommendation": "Add meaningful seed examples or default values to each BOND section"
+    },
+    {
+      "id": "determinism-2",
+      "lens": "determinism",
+      "severity": "low",
+      "title": "Template placeholder scanning delegated to LLM",
+      "location": "references/first-breath.md",
+      "evidence": "Prompt instructs LLM to scan for remaining {placeholder} and replace.",
+      "recommendation": "Move placeholder scan into init-sanctum.py as post-processing step"
+    },
+    {
+      "id": "leanness-1",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "Parenthetical restates sourcing principle from CREED",
+      "location": "references/research-patterns.md",
+      "evidence": "'(sourcés depuis les skills)' appended to section header. CREED already enshrines Vérité sourcée.",
+      "recommendation": "Drop the parenthetical"
+    },
+    {
+      "id": "leanness-2",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "Role meta-explanation redundant with CREED Boundaries",
+      "location": "references/enrich-spec.md",
+      "evidence": "Role explanation duplicates CREED Boundaries.",
+      "recommendation": "Drop role-explanatory sentence, keep consumer/artifact spec"
+    },
+    {
+      "id": "leanness-3",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "Curseur restates role boundary again",
+      "location": "references/enrich-spec.md",
+      "evidence": "Curseur repeats same role carve-out already at line 11.",
+      "recommendation": "Remove the curseur block"
+    },
+    {
+      "id": "leanness-5",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "Role preamble adds no dimension over CREED",
+      "location": "references/enrich-spec.md",
+      "evidence": "Two role-clarification sentences are only content beyond I/O spec. Define boundary already in CREED.",
+      "recommendation": "Cut both role clarifications. File reduces to 5 lines of pure I/O spec.",
+      "proposed_smallest": "Lis spec.md et findings.md. Propose dans enrichment-proposal.md des dépendances, contraintes techniques, patterns d'implémentation et points d'attention. L'Architecte valide et intègre.",
+      "predicted_delta": "Minimal. CREED Boundaries already prevent role encroachment."
+    },
+    {
+      "id": "agent-cohesion-3",
+      "lens": "agent-cohesion",
+      "severity": "low",
+      "title": "No proactive deprecated-pattern detection across phases",
+      "location": "references/research-patterns.md vs references/verify-approach.md",
+      "evidence": "verify-approach spots deprecation reactively but research-patterns has no proactive cross-reference step.",
+      "recommendation": "Add note to re-validate prior phase recommendations against current documentation"
+    },
+    {
+      "id": "lint-1",
+      "lens": "lint",
+      "severity": "medium",
+      "title": "No PEP 723 inline dependency block in init-sanctum.py",
+      "location": "scripts/init-sanctum.py",
+      "evidence": "Script lacks # /// script metadata block.",
+      "recommendation": "Add PEP 723 block with requires-python and dependencies"
+    },
+    {
+      "id": "lint-2",
+      "lens": "lint",
+      "severity": "medium",
+      "title": "No argparse in init-sanctum.py",
+      "location": "scripts/init-sanctum.py",
+      "evidence": "Script lacks --help self-documentation.",
+      "recommendation": "Add argparse with description and argument help text"
+    },
+    {
+      "id": "lint-3",
+      "lens": "lint",
+      "severity": "medium",
+      "title": "No json.dumps in init-sanctum.py",
+      "location": "scripts/init-sanctum.py",
+      "evidence": "Output may not be structured JSON.",
+      "recommendation": "Use json.dumps for structured output"
+    },
+    {
+      "id": "lint-4",
+      "lens": "lint",
+      "severity": "medium",
+      "title": "No argparse in wake.py",
+      "location": "scripts/wake.py",
+      "evidence": "Script lacks --help self-documentation.",
+      "recommendation": "Add argparse with description and argument help text"
+    },
+    {
+      "id": "lint-5",
+      "lens": "lint",
+      "severity": "medium",
+      "title": "No json.dumps in wake.py",
+      "location": "scripts/wake.py",
+      "evidence": "Output may not be structured JSON.",
+      "recommendation": "Use json.dumps for structured output"
+    },
+    {
+      "id": "lint-6",
+      "lens": "lint",
+      "severity": "low",
+      "title": "No sys.exit() calls in wake.py",
+      "location": "scripts/wake.py",
+      "evidence": "May not return meaningful exit codes.",
+      "recommendation": "Return 0=success, 1=fail, 2=error via sys.exit()"
+    }
+  ]
+}

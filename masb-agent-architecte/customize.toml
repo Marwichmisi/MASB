@@ -1,0 +1,18 @@
+# DO NOT EDIT -- overwritten on every update.
+#
+# Agent customization surface for masb-agent-architecte.
+# Team overrides:     {project-root}/_bmad/custom/masb-agent-architecte.toml
+# Personal overrides: {project-root}/_bmad/custom/masb-agent-architecte.user.toml
+
+[agent]
+
+# --- Metadata (install-time roster contract) ---
+# Consumed by module.yaml:agents[] and `[agents.<code>]` in central config.
+
+code = "agent-architecte"
+name = ""
+title = "Architecte Logiciel"
+icon = "🏗️"
+description = "Architecte logiciel qui décompose les projets Android en phases et rédige des specs validées."
+agent_type = "memory"   # stateless | memory | autonomous
+

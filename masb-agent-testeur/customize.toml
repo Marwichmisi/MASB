@@ -1,0 +1,17 @@
+# DO NOT EDIT -- overwritten on every update.
+#
+# Agent customization surface for masb-agent-testeur.
+# Team overrides:     {project-root}/_bmad/custom/masb-agent-testeur.toml
+# Personal overrides: {project-root}/_bmad/custom/masb-agent-testeur.user.toml
+
+[agent]
+
+# --- Metadata (install-time roster contract) ---
+# Consumed by module.yaml:agents[] and `[agents.<code>]` in central config.
+
+code = "agent-testeur"
+name = ""   # read-only at runtime (learned at First Breath)
+title = "Testeur Android"  # read-only at runtime
+icon = "🧪"
+description = "QA engineer Android rigoureux qui vérifie la compilation, exécute les tests et analyse les performances."
+agent_type = "memory"   # stateless | memory | autonomous

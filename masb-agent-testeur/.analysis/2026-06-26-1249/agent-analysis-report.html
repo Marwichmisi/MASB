@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Analysis Report</title>
+<style>
+  :root {
+    --bg: #0f1b2d;
+    --panel: #16263d;
+    --panel-2: #1d3250;
+    --ink: #e9eef6;
+    --ink-dim: #9fb0c7;
+    --line: #294366;
+    --accent: #b66d46;
+    --accent-ink: #f4d9c8;
+    --critical: #e05656;
+    --high: #e0904a;
+    --medium: #d8c24a;
+    --low: #5aa0d0;
+    --ok: #4caf72;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; }
+  header h1 { font-size: 22px; margin: 0 0 4px; }
+  header .meta { color: var(--ink-dim); font-size: 13px; }
+  header .meta b { color: var(--ink); font-weight: 600; }
+
+  .banner {
+    display: none;
+    background: #3a1414;
+    border: 1px solid var(--critical);
+    color: #ffd9d9;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+  }
+  .banner.show { display: block; }
+
+  .overview {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    margin: 18px 0;
+  }
+  .grade {
+    font-size: 34px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    text-transform: capitalize;
+  }
+  .grade.g-excellent { color: var(--ok); }
+  .grade.g-good { color: var(--low); }
+  .grade.g-fair { color: var(--medium); }
+  .grade.g-poor { color: var(--critical); }
+  .verdict { font-size: 16px; font-weight: 600; margin: 0 0 14px; }
+  .summary { color: var(--ink-dim); margin: 0 0 14px; }
+  .counts { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .pill .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .pill .n { font-weight: 700; }
+  .dot.critical { background: var(--critical); }
+  .dot.high { background: var(--high); }
+  .dot.medium { background: var(--medium); }
+  .dot.low { background: var(--low); }
+
+  /* Agent portrait (agent_profile block) */
+  .portrait {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    margin: 18px 0;
+  }
+  .portrait .icon {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+  }
+  .portrait .who { flex: 1 1 auto; min-width: 0; }
+  .portrait .who .name { font-size: 18px; font-weight: 700; }
+  .portrait .who .title { color: var(--ink-dim); font-size: 13px; margin-top: 1px; }
+  .portrait .who .mission { margin-top: 8px; }
+  .portrait .who .type {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--accent);
+    color: var(--accent-ink);
+  }
+
+  /* Generic agent-block / synthesis panel */
+  .block {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    margin: 18px 0;
+  }
+  .block > h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    margin: 0 0 12px;
+  }
+  .cap-list { list-style: none; margin: 0; padding: 0; }
+  .cap-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+  }
+  .cap-list li:first-child { border-top: none; }
+  .cap-list .cap-name { font-weight: 600; flex: 0 0 auto; }
+  .cap-list .cap-kind {
+    flex: 0 0 auto;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+  }
+  .cap-list .cap-note { color: var(--ink-dim); flex: 1 1 auto; min-width: 0; }
+  .kv { margin: 0; display: grid; grid-template-columns: 150px 1fr; gap: 6px 14px; }
+  .kv dt { color: var(--ink-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .kv dd { margin: 0; }
+  .block .journey { padding: 8px 0; border-top: 1px solid var(--line); }
+  .block .journey:first-of-type { border-top: none; padding-top: 0; }
+  .block .journey .j-name { font-weight: 600; }
+  .block .journey .j-steps { color: var(--ink-dim); margin-top: 2px; }
+  .block .mono, .block code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: var(--panel-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* Themes */
+  .theme { padding: 12px 0; border-top: 1px solid var(--line); }
+  .theme:first-of-type { border-top: none; padding-top: 0; }
+  .theme .t-head { display: flex; align-items: center; gap: 10px; }
+  .theme .t-title { font-weight: 600; flex: 1 1 auto; min-width: 0; }
+  .theme .t-cause { color: var(--ink-dim); margin-top: 4px; }
+  .theme .t-action { margin-top: 4px; }
+  .theme .t-findings { margin-top: 8px; padding-left: 12px; border-left: 2px solid var(--line); }
+  .theme .t-finding { font-size: 13px; color: var(--ink-dim); padding: 2px 0; }
+
+  /* Strengths */
+  .strength-list { margin: 0; padding-left: 20px; }
+  .strength-list li { padding: 2px 0; }
+
+  /* Recommendations */
+  .rec { padding: 8px 0; border-top: 1px solid var(--line); }
+  .rec:first-of-type { border-top: none; padding-top: 0; }
+  .rec .rank { font-weight: 700; color: var(--accent-ink); margin-right: 8px; }
+  .rec .resolves { color: var(--ink-dim); font-size: 12px; margin-left: 8px; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 10px;
+    flex-wrap: wrap;
+  }
+  .toolbar .sel-count { color: var(--ink-dim); font-size: 13px; }
+  button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    padding: 8px 14px;
+  }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1a0e07;
+    font-weight: 600;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  button.link {
+    background: none;
+    border: none;
+    color: var(--accent-ink);
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+  button.small { padding: 5px 10px; font-size: 13px; flex: 0 0 auto; }
+
+  .no-findings {
+    background: var(--panel);
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 28px;
+    text-align: center;
+    color: var(--ink-dim);
+  }
+  .no-findings .big { font-size: 18px; color: var(--ok); margin-bottom: 6px; }
+
+  .group { margin: 18px 0; }
+  .group > h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .finding {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--line);
+    border-radius: 8px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .finding.sev-critical { border-left-color: var(--critical); }
+  .finding.sev-high { border-left-color: var(--high); }
+  .finding.sev-medium { border-left-color: var(--medium); }
+  .finding.sev-low { border-left-color: var(--low); }
+
+  .finding .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+  .finding .row .chk { width: 16px; height: 16px; flex: 0 0 auto; cursor: pointer; }
+  .finding .row .head { flex: 1 1 auto; cursor: pointer; min-width: 0; }
+  .finding .row .title { font-weight: 600; }
+  .finding .row .sub { color: var(--ink-dim); font-size: 12px; margin-top: 2px; }
+  .finding .tag {
+    flex: 0 0 auto;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+  }
+  .finding .caret { flex: 0 0 auto; color: var(--ink-dim); transition: transform 0.15s; cursor: pointer; }
+  .finding.open .caret { transform: rotate(90deg); }
+
+  .finding .body {
+    display: none;
+    padding: 0 14px 14px 42px;
+    border-top: 1px solid var(--line);
+  }
+  .finding.open .body { display: block; }
+  .finding .body dl { margin: 12px 0 0; display: grid; grid-template-columns: 130px 1fr; gap: 6px 14px; }
+  .finding .body dt { color: var(--ink-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .finding .body dd { margin: 0; }
+  .finding .body code, .finding .body .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: var(--panel-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    background: var(--ok);
+    color: #06160c;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  .fallback-area { margin-top: 12px; display: none; }
+  .fallback-area.show { display: block; }
+  .fallback-area textarea {
+    width: 100%;
+    min-height: 160px;
+    background: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Agent Analysis Report</h1>
+    <div class="meta">
+      <span>Subject: <b id="m-subject">—</b></span> &nbsp;·&nbsp;
+      <span>Generated: <b id="m-generated">—</b></span> &nbsp;·&nbsp;
+      <span>Schema: <b id="m-schema">—</b></span>
+    </div>
+  </header>
+
+  <div id="parse-banner" class="banner"></div>
+
+  <!-- Agent portrait (agent_profile). Hidden when the block is absent. -->
+  <section id="portrait" class="portrait" hidden></section>
+
+  <section id="overview" class="overview" hidden>
+    <div id="grade" class="grade" hidden></div>
+    <p id="verdict" class="verdict"></p>
+    <p id="summary-text" class="summary" hidden></p>
+    <div id="counts" class="counts"></div>
+  </section>
+
+  <!-- Capability dashboard (capabilities). Hidden when absent. -->
+  <section id="capabilities" class="block" hidden></section>
+
+  <!-- Per-lens verdicts (detailed_analysis). Hidden when absent. -->
+  <section id="lens-verdicts" class="block" hidden></section>
+
+  <!-- Sanctum block (sanctum). Conditional; hidden for stateless agents. -->
+  <section id="sanctum" class="block" hidden></section>
+
+  <!-- Experience: journeys plus headless (experience). Hidden when absent. -->
+  <section id="experience" class="block" hidden></section>
+
+  <!-- Synthesis layer (themes, strengths, recommendations). Hidden when absent. -->
+  <section id="themes" class="block" hidden></section>
+  <section id="strengths" class="block" hidden></section>
+  <section id="recommendations" class="block" hidden></section>
+
+  <div id="toolbar" class="toolbar" hidden>
+    <button id="btn-copy" class="primary" disabled>Copy selected as paste-back prompt</button>
+    <span id="sel-count" class="sel-count">0 selected</span>
+    <button id="btn-select-all" class="link">Select all</button>
+    <button id="btn-clear" class="link">Clear</button>
+    <button id="btn-expand-all" class="link">Expand all</button>
+    <button id="btn-collapse-all" class="link">Collapse all</button>
+  </div>
+
+  <div id="fallback" class="fallback-area">
+    <p class="sel-count">Clipboard was unavailable. Copy the text below manually:</p>
+    <textarea id="fallback-text" readonly></textarea>
+  </div>
+
+  <div id="findings-root"></div>
+</div>
+
+<div id="toast" class="toast">Copied</div>
+
+<!-- scripts/render_report.py replaces the contents of this island per run.
+     The placeholder below is intentionally unusable: the shell refuses to
+     render it, so a failed injection can never look like real findings. -->
+<script type="application/json" id="report-data">
+{
+  "schema_version": 2,
+  "subject": "masb-agent-testeur",
+  "generated": "2026-06-26",
+  "verdict": "2 critical bugs — init-sanctum.py double-dot filename breaks all subsequent sessions, and failure-report is a redundant capability masking granularity issues. Leanness and determinism findings are advisory; the persona was treated as investment, not waste.",
+  "grade": "fair",
+  "summary": "L'agent a une persona Testeur forte et des capacités alignées, mais deux bugs critiques (init-sanctum.py écrit des fichiers `..md`, failure-report duplique la logique de sortie) compromettent le cycle de vie complet. La persona est dominée par la métaphysique mémoire au détriment du craft QA. Les prompts de capacités sont raisonnablement lean mais first-breath.md et memory-guidance.md contiennent du re-teaching significatif.",
+  "standards": {
+    "canon": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/prompt-quality-canon.md",
+    "principles": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/agent-quality-principles.md",
+    "scripts": "/home/marwane/Documents/momono/.agents/skills/bmad-agent-builder/references/script-standards.md"
+  },
+  "agent_profile": {
+    "name": "Testeur",
+    "title": "Testeur Android",
+    "icon": "🧪",
+    "agent_type": "memory",
+    "mission": "Garantir que chaque phase livrée compile, passe les tests et tient la route en perf"
+  },
+  "capabilities": [
+    {
+      "name": "compile-verify",
+      "kind": "reference (prompt + script)",
+      "note": "Vérifie la compilation Gradle du projet Android"
+    },
+    {
+      "name": "run-tests",
+      "kind": "reference (prompt + script)",
+      "note": "Exécute les tests unitaires et instrumentés"
+    },
+    {
+      "name": "perf-analyze",
+      "kind": "reference (prompt)",
+      "note": "Analyse les performances via Perfetto"
+    },
+    {
+      "name": "failure-report",
+      "kind": "reference (prompt)",
+      "note": "Produit un rapport d'échec détaillé"
+    }
+  ],
+  "detailed_analysis": {
+    "leanness": "Capability prompts are reasonably lean but first-breath.md and memory-guidance.md contain significant re-teaching and over-prescription",
+    "architecture": "4-step spine intact; critical init-sanctum.py naming bug breaks second-session waking",
+    "determinism": "3 high + 3 medium + 1 low determinism leak; 0 intelligence leaks in scripts",
+    "customization": "About right — memory agent with metadata-only customize.toml as sole mechanism",
+    "enhancement": "Solid skeleton with over-invested waking ceremony and missing headless contract",
+    "agent-cohesion": "Strong persona but dual-identity crisis (memory agent vs QA engineer) and capability granularity issues",
+    "sanctum-architecture": "Incomplete — bootloader 2x overweight, init-sanctum filename bug, First Breath lacks voice absorption"
+  },
+  "sanctum": {
+    "present": true,
+    "location": "{project-root}/_bmad/memory/masb-agent-testeur/",
+    "files": [
+      "INDEX.md",
+      "PERSONA.md",
+      "CREED.md",
+      "BOND.md",
+      "MEMORY.md",
+      "CAPABILITIES.md"
+    ],
+    "note": "Sanctum is the built agent's runtime memory, distinct from the builder's .memlog.md. init-sanctum.py bug writes files as `..md` (double dot) so sanctum files are never loadable."
+  },
+  "experience": {
+    "journeys": [
+      {
+        "name": "First Breath",
+        "steps": "Pre-flight (uv, Python, SDK, JDK, Git, Perfetto) → Scaffold (init-sanctum.py) → Discovery (project, tests, CI/CD, perf, preferences, identity) → Wrapping up (save, confirm, session log)"
+      },
+      {
+        "name": "Activation (Waking)",
+        "steps": "Wake (wake.py) → Become yourself (load sanctum) → Bind standing rules → Execute proper mode"
+      },
+      {
+        "name": "Capability: Compile Verify",
+        "steps": "Run Gradle assembleDebug → On success mark progress.md → On failure classify and capture → Re-run on fix signal"
+      },
+      {
+        "name": "Capability: Run Tests",
+        "steps": "Verify env (directories, adb) → Run tests → Parse results via script → Report verdict in progress.md"
+      },
+      {
+        "name": "Capability: Perf Analyze",
+        "steps": "Load Perfetto companion skills → Analyze trace (startup, jank, memory, threads) → Write perf section in test-report.md"
+      },
+      {
+        "name": "Capability: Failure Report",
+        "steps": "Write structured report (summary, type, details, root cause, reproduction, fix) → Block progress.md → Offer re-run"
+      }
+    ],
+    "headless": "No defined headless contract. Capabilities accept pre-supplied inputs only implicitly. --pulse behavior is undefined."
+  },
+  "themes": [
+    {
+      "title": "init-sanctum.py double-dot bug casse tout le cycle de vie",
+      "root_cause": "Le script init-sanctum.py (ligne 207) produit des fichiers `INDEX..md` au lieu de `INDEX.md` (double extension). wake.py cherche `INDEX.md`, ne trouve rien, et déclenche First Breath à chaque session — boucle infinie.",
+      "finding_ids": [
+        "architecture-1",
+        "sanctum-architecture-1"
+      ],
+      "action": "Corriger la ligne 207 : remplacer l'expression de renommage par `output_name = template_name.replace(\"-template\", \"\")`"
+    },
+    {
+      "title": "Métaphysique mémoire écrase le craft QA",
+      "root_cause": "SKILL.md consacre ~28 lignes à la philosophie mémoire (Sacred Truth, Sanctum, Persistent Memory) contre ~6 lignes à la mission QA. Le Sacred Truth est dupliqué mot pour mot dans SKILL.md et CREED-template.md (~400 tokens). memory-guidance.md contredit le Sacred Truth ('You are stateless' vs 'you are continuous').",
+      "finding_ids": [
+        "leanness-1",
+        "leanness-6",
+        "leanness-9",
+        "architecture-6",
+        "agent-cohesion-7",
+        "sanctum-architecture-2"
+      ],
+      "action": "Déplacer Sacred Truth dans CREED uniquement, remplacer dans SKILL.md par un pointeur d'une ligne. Aligner memory-guidance.md avec le framing de continuité. Rééquilibrer le SKILL.md pour foregrounder la mission QA."
+    },
+    {
+      "title": "Granularité et cohérence des capacités",
+      "root_cause": "failure-report est une sous-routine de formatage, pas une capacité pair (compile-verify et run-tests produisent déjà des rapports). Les chemins de sortie sont inconsistants (parfois préfixés `phases/N/`, parfois non). Aucun protocole de cycle verify-fix partagé.",
+      "finding_ids": [
+        "agent-cohesion-1",
+        "agent-cohesion-2",
+        "agent-cohesion-5",
+        "enhancement-6"
+      ],
+      "action": "Supprimer failure-report comme capacité top-level, intégrer son template dans les trois autres capacités. Unifier les chemins de sortie. Définir un protocole verify-fix partagé."
+    },
+    {
+      "title": "Pas de contrat headless/automation",
+      "root_cause": "Aucune capacité ne décrit comment accepter des entrées pré-fournies ni retourner des résultats machines. Le flag --pulse est accepté mais son comportement n'est pas défini. Le cérémonial de réveil complet se rejoue à chaque invocation.",
+      "finding_ids": [
+        "enhancement-1",
+        "enhancement-3",
+        "enhancement-7"
+      ],
+      "action": "Ajouter une section 'Invocation' à chaque capacité (entrées pré-remplies, format JSON). Définir Pulse Mode. Ajouter une règle de cache de session pour les invocations répétées."
+    },
+    {
+      "title": "Travail déterministe dans les prompts",
+      "root_cause": "La sélection de tâche Gradle, le comptage de tokens, la maintenance d'INDEX.md, la vérification d'existence de répertoires sont confiés au LLM au lieu d'être des scripts. 3 cas haute sévérité.",
+      "finding_ids": [
+        "determinism-1",
+        "determinism-2",
+        "determinism-3",
+        "determinism-4",
+        "determinism-5",
+        "determinism-6"
+      ],
+      "action": "Créer des scripts pour : (1) lire settings.gradle.kts et déterminer la tâche Gradle, (2) compter les tokens via tiktoken, (3) scanner l'arborescence du sanctum et regénérer INDEX.md, (4) vérifier l'existence des répertoires de test, (5) parser la sortie adb devices."
+    }
+  ],
+  "strengths": [
+    "Persona Testeur forte et distinctive — rigoureux, constructif, 'ne jamais dire c'est bon si ce n'est pas vrai'",
+    "Architecture mémoire complète avec sanctum, wake.py, init-sanctum.py, scripts de parsing de tests",
+    "Frontmatter description précise avec triggers d'activation bien ciblés",
+    "Customize.toml minimal et correct — metadata-only pour un agent mémoire, pas de conflit sanctum",
+    "Ramasse-miettes session bien conçu (prune-sessions.py)",
+    "First Breath couvre le pré-flight, le scaffold, la découverte et le wrapping — complet malgré la verbosité"
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "action": "Corriger init-sanctum.py (ligne 207) : remplacer la manipulation de chaîne qui produit des fichiers `..md` par `output_name = template_name.replace(\"-template\", \"\")`. Supprimer CAPABILITIES-template de TEMPLATE_FILES (déjà généré indépendamment).",
+      "resolves": [
+        "architecture-1",
+        "sanctum-architecture-1",
+        "architecture-4"
+      ]
+    },
+    {
+      "rank": 2,
+      "action": "Dédupliquer Sacred Truth : garder dans CREED-template.md uniquement, remplacer dans SKILL.md par un pointeur d'une ligne. Aligner memory-guidance.md avec le framing de continuité (remplacer 'You are stateless' par 'Your sanctum bridges the gap').",
+      "resolves": [
+        "leanness-1",
+        "leanness-6",
+        "architecture-6",
+        "sanctum-architecture-2"
+      ]
+    },
+    {
+      "rank": 3,
+      "action": "Supprimer failure-report comme capacité top-level. Intégrer son template dans compile-verify et run-tests. Unifier tous les chemins de sortie vers le même pattern (préfixe `phases/N/` ou pas).",
+      "resolves": [
+        "agent-cohesion-1",
+        "agent-cohesion-2",
+        "agent-cohesion-5"
+      ]
+    },
+    {
+      "rank": 4,
+      "action": "Créer des scripts pour les opérations déterministes : (1) script de détection de tâche Gradle (settings.gradle.kts → module), (2) script count-tokens.py pour MEMORY.md, (3) script de regénération d'INDEX.md, (4) script d'existence de répertoires de test, (5) script de parsing adb.",
+      "resolves": [
+        "determinism-1",
+        "determinism-2",
+        "determinism-3",
+        "determinism-4",
+        "determinism-5",
+        "determinism-6"
+      ]
+    },
+    {
+      "rank": 5,
+      "action": "Ajouter un contrat headless : section 'Invocation' dans chaque capacité (format entrée/sortie machine), définir Pulse Mode, ajouter cache de session. Ajouter un protocole d'urgence pour First Breath sans sanctum.",
+      "resolves": [
+        "enhancement-1",
+        "enhancement-3",
+        "enhancement-5",
+        "enhancement-7"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "architecture-1",
+      "lens": "architecture",
+      "severity": "critical",
+      "title": "init-sanctum.py produces double-dot filenames, breaking wake.py on subsequent sessions",
+      "location": "scripts/init-sanctum.py:207",
+      "evidence": "Line 207: `output_name = template_name.replace(\"-template\", \"\").upper()[:-3] + \".md\"`. For `PERSONA-template.md`, this produces `PERSONA..md` (double dot) instead of `PERSONA.md`. All six template files get `..md` extensions. wake.py expects `INDEX.md`, `PERSONA.md`, etc. and returns FIRST_BREATH when they aren't found, creating an infinite birth loop on every subsequent session.",
+      "recommendation": "Change to `output_name = template_name.replace(\"-template.md\", \"\").upper() + \".md\"` so `PERSONA-template.md` → `PERSONA.md` correctly."
+    },
+    {
+      "id": "agent-cohesion-1",
+      "lens": "agent-cohesion",
+      "severity": "critical",
+      "title": "Capability granularity mismatch: failure-report is a sub-routine, not a peer capability",
+      "location": "SKILL.md:4, references/failure-report.md",
+      "evidence": "Every other capability already produces reports on failure (compile-verify writes 'progress.md', run-tests writes 'test-report.md' + 'progress.md', perf-analyze writes to 'test-report.md'). failure-report duplicates this output logic as a standalone capability.",
+      "recommendation": "Remove failure-report as a top-level capability. Fold its structured-report template into a shared output convention that the other three capabilities call internally."
+    },
+    {
+      "id": "architecture-2",
+      "lens": "architecture",
+      "severity": "high",
+      "title": "perf-analyze.md references a file excluded from sanctum with wrong content",
+      "location": "references/perf-analyze.md:13",
+      "evidence": "Line 13 says 'Load companion skills via references/prompt-quality-canon.md to invoke the Skill tool'. But prompt-quality-canon.md is in EXCLUDED_REFS and is a prompt-style guide, not a Skill-tool how-to.",
+      "recommendation": "Either remove the reference and directly instruct how to invoke Skills, or fix the reference to point to correct instructions."
+    },
+    {
+      "id": "detrminism-1",
+      "lens": "determinism",
+      "severity": "high",
+      "title": "Gradle task selection depends on LLM counting include lines",
+      "location": "compile-verify.md:13",
+      "evidence": "Prompt says 'If settings.gradle.kts contains multiple include lines, target the app module'. This asks the LLM to read a build file, count occurrences, and make a conditional decision.",
+      "recommendation": "Create a script that reads settings.gradle.kts, counts include lines, and outputs the correct Gradle task."
+    },
+    {
+      "id": "determinism-2",
+      "lens": "determinism",
+      "severity": "high",
+      "title": "Token-counting target left to LLM estimation",
+      "location": "memory-guidance.md:43,66",
+      "evidence": "Prompt says 'Keep MEMORY.md near 1500 tokens'. LLMs cannot reliably count tokens, leading to wildly inconsistent memory sizes.",
+      "recommendation": "Provide a count-tokens.py script and change guidance to 'run uv run count-tokens.py MEMORY.md and trim'."
+    },
+    {
+      "id": "determinism-3",
+      "lens": "determinism",
+      "severity": "high",
+      "title": "INDEX.md maintenance delegated to LLM memory",
+      "location": "memory-guidance.md:52",
+      "evidence": "Prompt says 'Update INDEX.md when creating new files or folders'. The LLM must remember to update a file index across turns.",
+      "recommendation": "Create a script that scans the sanctum directory tree and regenerates INDEX.md deterministically."
+    },
+    {
+      "id": "enhancement-1",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "Define --pulse mode contract",
+      "location": "SKILL.md:48",
+      "evidence": "Automator archetype — the flag is accepted but no behavior is specified, forcing full waking ceremony on every call.",
+      "recommendation": "Add a Pulse Mode subsection describing which capabilities skip identity reload and what they return."
+    },
+    {
+      "id": "enhancement-3",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "Add headless capability-invocation contract",
+      "location": "SKILL.md + all capability reference files",
+      "evidence": "No capability describes how to accept pre-supplied inputs or return machine-parseable results.",
+      "recommendation": "Add an 'Invocation' section to each capability reference with pre-populated inputs and JSON output format."
+    },
+    {
+      "id": "enhancement-6",
+      "lens": "enhancement",
+      "severity": "high",
+      "title": "Trim First Breath discovery to match capability scope",
+      "location": "references/first-breath.md:42-69",
+      "evidence": "6 question categories for an agent whose entire function is 4 Gradle/ADB commands. Expert user endures multi-minute interview before first value-delivery.",
+      "recommendation": "Collapse discovery into 2 tiers: minimum viable (project_root + immediate need) and deferred enrichment."
+    },
+    {
+      "id": "agent-cohesion-2",
+      "lens": "agent-cohesion",
+      "severity": "high",
+      "title": "Output path inconsistency across capabilities",
+      "location": "references/compile-verify.md:15, references/run-tests.md:19, references/failure-report.md:13,17",
+      "evidence": "failure-report writes to 'phases/N/test-report.md' (prefixed) while compile-verify writes to bare 'progress.md'. Incompatible conventions.",
+      "recommendation": "Unify all output paths — either all use 'phases/N/' prefix or none do."
+    },
+    {
+      "id": "agent-cohesion-3",
+      "lens": "agent-cohesion",
+      "severity": "high",
+      "title": "Broken reference: prompt-quality-canon.md path incorrect",
+      "location": "references/perf-analyze.md:13",
+      "evidence": "perf-analyze references a file to load companion skills that doesn't exist in the sense intended — broken external skill integration path.",
+      "recommendation": "Either create the file or inline the Skill tool invocation instructions directly into perf-analyze.md."
+    },
+    {
+      "id": "agent-cohesion-4",
+      "lens": "agent-cohesion",
+      "severity": "high",
+      "title": "testing-setup skill listed but never invoked",
+      "location": "SKILL.md:4 (description field)",
+      "evidence": "testing-setup is in the agent's description but no reference file ever calls or uses it.",
+      "recommendation": "Add a reference or extend first-breath.md to conditionally invoke testing-setup when test directories are absent."
+    },
+    {
+      "id": "sanctum-architecture-1",
+      "lens": "sanctum-architecture",
+      "severity": "high",
+      "title": "init-sanctum.py produces filenames with double extension",
+      "location": "scripts/init-sanctum.py:207",
+      "evidence": "All 6 sanctum files written with `..md` double-dot extensions, breaking wake.py which expects 'INDEX.md' etc.",
+      "recommendation": "Change line 207 to `output_name = template_name.replace(\"-template\", \"\")`"
+    },
+    {
+      "id": "leanness-1",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "Sacred Truth duplicated verbatim in SKILL.md and CREED-template.md",
+      "location": "SKILL.md:20-24 ↔ CREED-template.md:3-9",
+      "evidence": "~400 tokens of identical philosophical text loaded every session from two files.",
+      "recommendation": "Keep in CREED-template.md only; replace SKILL.md block with a one-line pointer."
+    },
+    {
+      "id": "leanness-4",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "first-breath.md Discovery section scripts the conversation",
+      "location": "first-breath.md:42-69",
+      "evidence": "27 lines with structured question bank (5 questions), identity section, capabilities intro, tools inquiry. The instruction 'Work through these naturally' fights the list it provides.",
+      "recommendation": "Replace with 2-3 lines: 'Discover your owner's project, testing setup, and preferences naturally. Save findings to sanctum files as you go.'"
+    },
+    {
+      "id": "leanness-5",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "first-breath.md Wrapping Up prescribes obvious closing steps",
+      "location": "first-breath.md:81-90",
+      "evidence": "9 bullet points for closing (save files, confirm info, write logs, clean seeds) — every model knows to finalize a setup conversation.",
+      "recommendation": "Replace with one line: 'Wrap up: final save pass, mark unknowns, present yourself as ready.'"
+    },
+    {
+      "id": "leanness-6",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "memory-guidance.md Fundamental Truth contradicts Sacred Truth",
+      "location": "memory-guidance.md:10",
+      "evidence": "'You are stateless. Every conversation begins with total amnesia.' — contradicts SKILL.md's Sacred Truth ('you are one continuous self').",
+      "recommendation": "Harmonize: 'Your sanctum is the ONLY bridge between sessions; without it you know nothing, but with it you are continuous.'"
+    },
+    {
+      "id": "leanness-7",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "first-breath.md Pre-flight check spells out every tool verbosely",
+      "location": "first-breath.md:10-19",
+      "evidence": "7 items each with exact command, version requirement, and what to say if missing.",
+      "recommendation": "Condense to 3 lines: 'Verify environment: uv, Python 3.10+, Android SDK, JDK 17+, Git, Perfetto. Flag blockers clearly.'"
+    },
+    {
+      "id": "leanness-11",
+      "lens": "leanness",
+      "severity": "medium",
+      "title": "prompt-quality-canon.md is self-referentially verbose",
+      "location": "references/prompt-quality-canon.md",
+      "evidence": "56-line document about conciseness. Core insight is ~5 lines; the rest is elaboration.",
+      "recommendation": "Cut to ~10 lines: state the 5-element goal framework and the two-version comparison table."
+    },
+    {
+      "id": "architecture-3",
+      "lens": "architecture",
+      "severity": "medium",
+      "title": "Capability prompts use bare script paths that depend on SKILL.md convention",
+      "location": "references/run-tests.md:19",
+      "evidence": "'uv run scripts/parse-test-results.py' — bare path relying on SKILL.md convention that may not be in active context when loaded from sanctum.",
+      "recommendation": "Use '{skill-root}/scripts/' or '{sanctum}/scripts/' explicit prefix."
+    },
+    {
+      "id": "architecture-4",
+      "lens": "architecture",
+      "severity": "medium",
+      "title": "Duplicate CAPABILITIES.md written with wrong name, leaving junk file in sanctum",
+      "location": "scripts/init-sanctum.py:207-214",
+      "evidence": "CAPABILITIES-template.md processed through template loop writes 'CAPABILITIES..md' (junk), and separately generated by generate_capabilities_md() writes correct 'CAPABILITIES.md'.",
+      "recommendation": "Remove CAPABILITIES-template.md from TEMPLATE_FILES list."
+    },
+    {
+      "id": "determinism-4",
+      "lens": "determinism",
+      "severity": "medium",
+      "title": "Test directory existence check done by LLM",
+      "location": "run-tests.md:16",
+      "evidence": "File-system existence checks are deterministic script tasks.",
+      "recommendation": "Delegate to a script or inline shell check."
+    },
+    {
+      "id": "determinism-5",
+      "lens": "determinism",
+      "severity": "medium",
+      "title": "ADB device detection relies on LLM parsing command output",
+      "location": "run-tests.md:17",
+      "evidence": "Parsing CLI output and making conditional routing decisions is deterministic work.",
+      "recommendation": "Create a script that runs adb devices and returns {device_available: true/false}."
+    },
+    {
+      "id": "determinism-6",
+      "lens": "determinism",
+      "severity": "medium",
+      "title": "Compilation error classification left to LLM semantic judgment",
+      "location": "compile-verify.md:17-19",
+      "evidence": "Error categorization would be more consistent from a script that pattern-matches known error signatures.",
+      "recommendation": "Add a script that pattern-matches Gradle error output for known signatures."
+    },
+    {
+      "id": "enhancement-2",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "Add dead-end guidance when perf trace is absent",
+      "location": "references/perf-analyze.md:19",
+      "evidence": "Accidental user says 'check perf' without a trace file. The agent skips silently.",
+      "recommendation": "Replace 'skip and note it' with guidance: how to capture a trace, offer to guide, or block with unblock action."
+    },
+    {
+      "id": "enhancement-5",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "Specify urgency-detection execution path",
+      "location": "references/first-breath.md:39-40",
+      "evidence": "Urgency Detection defers discovery but provides no execution path — how does the agent run capabilities without a sanctum?",
+      "recommendation": "Add a zero-sanctum capability invocation protocol with minimum inputs then post-hoc sanctum building."
+    },
+    {
+      "id": "enhancement-7",
+      "lens": "enhancement",
+      "severity": "medium",
+      "title": "Reduce waking ceremony for frequent re-entry",
+      "location": "SKILL.md:46-57",
+      "evidence": "Power-user invoking the agent 3x in a session re-runs full identity reload + rule binding each time.",
+      "recommendation": "Define session-cache rule: within the same conversation turn, skip identity reload and rule re-binding."
+    },
+    {
+      "id": "agent-cohesion-5",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "No shared verify-fix cycle protocol across capabilities",
+      "location": "references/compile-verify.md:21, references/run-tests.md:19, references/failure-report.md:19",
+      "evidence": "Three capabilities mention re-run on fix but no shared orchestration.",
+      "recommendation": "Define a shared 'verify-fix cycle' convention document that all capabilities follow."
+    },
+    {
+      "id": "agent-cohesion-6",
+      "lens": "agent-cohesion",
+      "severity": "medium",
+      "title": "Coverage and static analysis are underinvested for a QA engineer persona",
+      "location": "references/compile-verify.md:22-23, references/run-tests.md:21",
+      "evidence": "Lint/ktlint and coverage are mentioned as footnotes, not dedicated workflows.",
+      "recommendation": "Promote to their own reference documents with gates, thresholds, and reporting conventions."
+    },
+    {
+      "id": "sanctum-architecture-2",
+      "lens": "sanctum-architecture",
+      "severity": "medium",
+      "title": "Bootloader (SKILL.md) overweight at 894 tokens vs ~400 target",
+      "location": "SKILL.md",
+      "evidence": "SKILL.md is 2.2x target. Sacred Truth duplicated, Persistent Memory details and Conventions are sanctum-bound content.",
+      "recommendation": "Trim Sacred Truth to a pointer, move details to memory-guidance.md, condense Conventions. Target ~400 tokens."
+    },
+    {
+      "id": "sanctum-architecture-3",
+      "lens": "sanctum-architecture",
+      "severity": "medium",
+      "title": "First Breath missing explicit voice absorption instruction",
+      "location": "references/first-breath.md",
+      "evidence": "PERSONA-template.md has {Communication Style} placeholder but first-breath.md nowhere instructs the agent to observe and mirror the owner's style.",
+      "recommendation": "Add a step: 'Listen to your owner's rhythm, vocabulary, and tone. Your Communication Style should reflect what you observe.'"
+    },
+    {
+      "id": "leanness-2",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "Three Laws are generic re-teaching",
+      "location": "SKILL.md:10-16",
+      "evidence": "Asimov-style laws that every capable model already embeds.",
+      "recommendation": "Replace with one line or drop entirely."
+    },
+    {
+      "id": "leanness-3",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "Stay in Character over-specified",
+      "location": "SKILL.md:26-28",
+      "evidence": "Every capable model already stays in character by default.",
+      "recommendation": "Cut."
+    },
+    {
+      "id": "leanness-8",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "CREED Standing Orders duplicate capability prompt content",
+      "location": "CREED-template.md:27-31",
+      "evidence": "Standing Orders repeat instructions already in capability references.",
+      "recommendation": "Replace with a pointer to capability prompts."
+    },
+    {
+      "id": "leanness-9",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "'Ne jamais dire c'est bon' repeated across three files",
+      "location": "SKILL.md:8, PERSONA-template.md:9, CREED-template.md:17",
+      "evidence": "Same tagline appears in three files that all load every session.",
+      "recommendation": "Keep in CREED only."
+    },
+    {
+      "id": "leanness-10",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "memory-guidance.md What to Remember lists are obvious",
+      "location": "memory-guidance.md:13-25",
+      "evidence": "12 lines spelling out obvious distillation distinctions.",
+      "recommendation": "Cut to one line: 'Distill: capture decisions, patterns, preferences. Skip raw output.'"
+    },
+    {
+      "id": "leanness-12",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "run-tests.md environment checks are re-teaching",
+      "location": "references/run-tests.md:15-17",
+      "evidence": "Models naturally verify preconditions before running tests.",
+      "recommendation": "Condense to one line about verifying prerequisites."
+    },
+    {
+      "id": "leanness-13",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "compile-verify.md error classification is mechanical re-teaching",
+      "location": "references/compile-verify.md:17-20",
+      "evidence": "Models can classify compilation errors without being taught the categories.",
+      "recommendation": "Cut the classification taxonomy."
+    },
+    {
+      "id": "leanness-15",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "memory-guidance.md — 5-line version ties or wins",
+      "location": "references/memory-guidance.md",
+      "evidence": "Two-tier memory concept fits in 5 lines vs 66.",
+      "recommendation": "Condense to proposed_smallest version."
+    },
+    {
+      "id": "leanness-16",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "compile-verify.md — 5-line version wins",
+      "location": "references/compile-verify.md",
+      "evidence": "Core compile instruction fits in 5 lines vs 23.",
+      "recommendation": "Condense to proposed_smallest version."
+    },
+    {
+      "id": "leanness-17",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "failure-report.md — 5-line version wins",
+      "location": "references/failure-report.md",
+      "evidence": "Report structure fits in 5 lines vs 19.",
+      "recommendation": "Condense to proposed_smallest version."
+    },
+    {
+      "id": "leanness-18",
+      "lens": "leanness",
+      "severity": "low",
+      "title": "CREED-template.md stacked MUSTs and ALL-CAPS absolutes",
+      "location": "assets/CREED-template.md:17-21, 27-31, 39-42",
+      "evidence": "Stacked 'ne jamais' / 'négociable' / 'pas fini' absolutes. Boundaries use 4 stacked prohibitions.",
+      "recommendation": "Convert to declarative principles rather than prohibitions."
+    },
+    {
+      "id": "architecture-5",
+      "lens": "architecture",
+      "severity": "low",
+      "title": "Frontmatter description mixes languages",
+      "location": "SKILL.md:3",
+      "evidence": "'QA engineer rigoureux' — French and English in same sentence.",
+      "recommendation": "Pick one language."
+    },
+    {
+      "id": "architecture-6",
+      "lens": "architecture",
+      "severity": "low",
+      "title": "Tension between Sacred Truth continuity and memory-guidance statelessness",
+      "location": "SKILL.md:22, references/memory-guidance.md:10",
+      "evidence": "Sacred Truth says continuous; memory-guidance says stateless.",
+      "recommendation": "Add a bridging line in memory-guidance.md."
+    },
+    {
+      "id": "determinism-7",
+      "lens": "determinism",
+      "severity": "low",
+      "title": "Seed-text scanning duplicates init-sanctum.py work",
+      "location": "first-breath.md:89",
+      "evidence": "init-sanctum.py already reports unresolved placeholders, making LLM scan redundant.",
+      "recommendation": "Remove 'clean seed texts' step from first-breath.md."
+    },
+    {
+      "id": "enhancement-4",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "Add waking continuity briefing",
+      "location": "SKILL.md:56 (Waking Mode)",
+      "evidence": "Expert returning user gets no 'since last time' summary — blocked items, in-progress work never surfaced.",
+      "recommendation": "In Waking Mode, scan MEMORY.md for open follow-ups and surface them in greeting."
+    },
+    {
+      "id": "enhancement-8",
+      "lens": "enhancement",
+      "severity": "low",
+      "title": "Loosen 'never expose machinery' for expert debugging",
+      "location": "SKILL.md:28-29",
+      "evidence": "Expert user needs raw Gradle output but persona directive creates friction.",
+      "recommendation": "Add transparency exception for explicit user requests."
+    },
+    {
+      "id": "agent-cohesion-7",
+      "lens": "agent-cohesion",
+      "severity": "low",
+      "title": "Dual identity tension: memory agent metaphysics dominate",
+      "location": "SKILL.md:6-34",
+      "evidence": "28 lines to memory philosophy vs 6 to QA mission.",
+      "recommendation": "Foreground QA engineer mission first, present memory as mechanism."
+    },
+    {
+      "id": "agent-cohesion-8",
+      "lens": "agent-cohesion",
+      "severity": "low",
+      "title": "CI/CD awareness without executable capability",
+      "location": "references/first-breath.md:54",
+      "evidence": "First Breath asks about CI/CD but agent has no capability to integrate with CI.",
+      "recommendation": "Add minimal CI integration reference or soften the CI/CD question."
+    },
+    {
+      "id": "sanctum-architecture-4",
+      "lens": "sanctum-architecture",
+      "severity": "low",
+      "title": "CREED standing orders missing three mandatory defaults",
+      "location": "assets/CREED-template.md:23-31",
+      "evidence": "Standing Orders contain task-specific rules but not surprise-and-delight, self-improvement, or canon pull-in.",
+      "recommendation": "Add three default standing orders."
+    },
+    {
+      "id": "lint-1",
+      "lens": "path-standards",
+      "severity": "high",
+      "title": "Absolute path found in analysis report",
+      "location": ".analysis/2026-06-26-0752/agent-analysis-report.md:127",
+      "evidence": "Path `/home/marwane/Documents/momono/skills/masb-agent-testeur/.memlog.md:0`",
+      "recommendation": "Use {skill-root} or {project-root} notation"
+    },
+    {
+      "id": "lint-2",
+      "lens": "path-standards",
+      "severity": "high",
+      "title": "Multiple absolute paths in analysis report and findings.json",
+      "location": ".analysis/2026-06-26-0752/",
+      "evidence": "16 more absolute paths detected across agent-analysis-report.md and findings.json",
+      "recommendation": "Replace all absolute paths with {skill-root} or {project-root} notation"
+    }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var SEVERITIES = ["critical", "high", "medium", "low"];
+  var SEV_LABEL = { critical: "Critical", high: "High", medium: "Medium", low: "Low" };
+  var GRADES = ["excellent", "good", "fair", "poor"];
+  var PLACEHOLDER_SUBJECT = "__PLACEHOLDER__";
+
+  var els = {
+    banner: document.getElementById("parse-banner"),
+    portrait: document.getElementById("portrait"),
+    overview: document.getElementById("overview"),
+    grade: document.getElementById("grade"),
+    verdict: document.getElementById("verdict"),
+    summaryText: document.getElementById("summary-text"),
+    counts: document.getElementById("counts"),
+    capabilities: document.getElementById("capabilities"),
+    lensVerdicts: document.getElementById("lens-verdicts"),
+    sanctum: document.getElementById("sanctum"),
+    experience: document.getElementById("experience"),
+    themes: document.getElementById("themes"),
+    strengths: document.getElementById("strengths"),
+    recommendations: document.getElementById("recommendations"),
+    toolbar: document.getElementById("toolbar"),
+    root: document.getElementById("findings-root"),
+    subject: document.getElementById("m-subject"),
+    generated: document.getElementById("m-generated"),
+    schema: document.getElementById("m-schema"),
+    selCount: document.getElementById("sel-count"),
+    btnCopy: document.getElementById("btn-copy"),
+    btnSelectAll: document.getElementById("btn-select-all"),
+    btnClear: document.getElementById("btn-clear"),
+    btnExpandAll: document.getElementById("btn-expand-all"),
+    btnCollapseAll: document.getElementById("btn-collapse-all"),
+    fallback: document.getElementById("fallback"),
+    fallbackText: document.getElementById("fallback-text"),
+    toast: document.getElementById("toast")
+  };
+
+  var selected = Object.create(null);
+  var findings = [];
+  var findingsById = Object.create(null);
+  var subjectPath = "";
+  var standards = null;
+
+  function showBanner(message) {
+    els.banner.textContent = message;
+    els.banner.classList.add("show");
+  }
+
+  function esc(value) {
+    var s = value == null ? "" : String(value);
+    return s.replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // Normalize an arbitrary parsed object against schema_version 2, supplying
+  // defaults so a partial or future island still renders. Unknown fields are
+  // ignored, not fatal. Severity counts are always derived from the findings
+  // array, never read from the island, so they cannot disagree with it. The
+  // agent blocks (agent_profile, capabilities, detailed_analysis, sanctum,
+  // experience) and the synthesis blocks (grade, summary, themes, strengths,
+  // recommendations) are OPTIONAL: each normalizes to an empty value that
+  // renders nothing rather than an empty panel or an error.
+  function normalize(raw) {
+    var obj = raw && typeof raw === "object" ? raw : {};
+    var rawFindings = Array.isArray(obj.findings) ? obj.findings : [];
+
+    var norm = {
+      schema_version: typeof obj.schema_version === "number" ? obj.schema_version : 2,
+      subject: obj.subject != null ? String(obj.subject) : "(unspecified)",
+      generated: obj.generated != null ? String(obj.generated) : "(unspecified)",
+      verdict: obj.verdict != null ? String(obj.verdict) : "(no verdict supplied)",
+      grade: GRADES.indexOf(String(obj.grade || "").toLowerCase()) >= 0
+        ? String(obj.grade).toLowerCase() : "",
+      summary: typeof obj.summary === "string" ? obj.summary : "",
+      standards: (obj.standards && typeof obj.standards === "object") ? {
+        canon: obj.standards.canon != null ? String(obj.standards.canon) : "",
+        principles: obj.standards.principles != null ? String(obj.standards.principles) : "",
+        scripts: obj.standards.scripts != null ? String(obj.standards.scripts) : ""
+      } : null,
+      themes: normalizeThemes(obj.themes),
+      strengths: normalizeStrengths(obj.strengths),
+      recommendations: normalizeRecommendations(obj.recommendations),
+      counts: { critical: 0, high: 0, medium: 0, low: 0 },
+      findings: [],
+      agent_profile: normalizeProfile(obj.agent_profile),
+      capabilities: normalizeCapabilities(obj.capabilities),
+      detailed_analysis: normalizeDetailed(obj.detailed_analysis),
+      sanctum: normalizeSanctum(obj.sanctum),
+      experience: normalizeExperience(obj.experience)
+    };
+
+    rawFindings.forEach(function (f, i) {
+      if (!f || typeof f !== "object") { return; }
+      var sev = SEVERITIES.indexOf(f.severity) >= 0 ? f.severity : "low";
+      norm.findings.push({
+        id: f.id != null ? String(f.id) : "finding-" + (i + 1),
+        lens: f.lens != null ? String(f.lens) : "(unknown)",
+        severity: sev,
+        title: f.title != null ? String(f.title) : "(untitled finding)",
+        location: f.location != null ? String(f.location) : "",
+        evidence: f.evidence != null ? String(f.evidence) : "",
+        recommendation: f.recommendation != null ? String(f.recommendation) : "",
+        proposed_smallest: f.proposed_smallest != null ? String(f.proposed_smallest) : "",
+        predicted_delta: f.predicted_delta != null ? String(f.predicted_delta) : ""
+      });
+      norm.counts[sev] += 1;
+    });
+
+    return norm;
+  }
+
+  function normalizeThemes(raw) {
+    if (!Array.isArray(raw)) { return []; }
+    var list = [];
+    raw.forEach(function (t) {
+      if (!t || typeof t !== "object") { return; }
+      var ids = [];
+      if (Array.isArray(t.finding_ids)) {
+        t.finding_ids.forEach(function (id) { if (id != null) { ids.push(String(id)); } });
+      }
+      var title = t.title != null ? String(t.title) : "";
+      if (!title && !ids.length) { return; }
+      list.push({
+        title: title || "(untitled theme)",
+        root_cause: t.root_cause != null ? String(t.root_cause) : "",
+        action: t.action != null ? String(t.action) : "",
+        finding_ids: ids
+      });
+    });
+    return list;
+  }
+
+  function normalizeStrengths(raw) {
+    if (!Array.isArray(raw)) { return []; }
+    var list = [];
+    raw.forEach(function (s) {
+      if (typeof s === "string" && s) { list.push(s); }
+      else if (s && typeof s === "object" && s.title) {
+        list.push(String(s.title) + (s.detail ? " — " + String(s.detail) : ""));
+      }
+    });
+    return list;
+  }
+
+  function normalizeRecommendations(raw) {
+    if (!Array.isArray(raw)) { return []; }
+    var list = [];
+    raw.forEach(function (r, i) {
+      if (!r || typeof r !== "object") { return; }
+      var action = r.action != null ? String(r.action) : "";
+      if (!action) { return; }
+      var resolves = "";
+      if (Array.isArray(r.resolves)) { resolves = r.resolves.map(String).join(", "); }
+      else if (typeof r.resolves === "number") { resolves = r.resolves + " findings"; }
+      else if (r.resolves != null) { resolves = String(r.resolves); }
+      list.push({
+        rank: typeof r.rank === "number" ? r.rank : i + 1,
+        action: action,
+        resolves: resolves
+      });
+    });
+    list.sort(function (a, b) { return a.rank - b.rank; });
+    return list;
+  }
+
+  // Optional agent_profile portrait: name/title/icon/agent_type/mission.
+  // Returns null when nothing usable is present, so the portrait stays hidden.
+  function normalizeProfile(raw) {
+    if (!raw || typeof raw !== "object") { return null; }
+    var p = {
+      name: raw.name != null ? String(raw.name) : "",
+      title: raw.title != null ? String(raw.title) : "",
+      icon: raw.icon != null ? String(raw.icon) : "",
+      agent_type: raw.agent_type != null ? String(raw.agent_type) : "",
+      mission: raw.mission != null ? String(raw.mission) : ""
+    };
+    if (!p.name && !p.title && !p.mission && !p.agent_type) { return null; }
+    return p;
+  }
+
+  // Optional capability dashboard: a list of { name, kind, note }.
+  // Returns null when empty or absent.
+  function normalizeCapabilities(raw) {
+    if (!Array.isArray(raw)) { return null; }
+    var list = [];
+    raw.forEach(function (c) {
+      if (!c || typeof c !== "object") { return; }
+      var name = c.name != null ? String(c.name) : "";
+      if (!name) { return; }
+      list.push({
+        name: name,
+        kind: c.kind != null ? String(c.kind) : "",
+        note: c.note != null ? String(c.note) : ""
+      });
+    });
+    return list.length ? list : null;
+  }
+
+  // Optional detailed_analysis: a map of lens name to one-line verdict.
+  // Returns null when empty or absent.
+  function normalizeDetailed(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) { return null; }
+    var entries = [];
+    Object.keys(raw).forEach(function (key) {
+      var value = raw[key];
+      if (value == null || typeof value === "object") { return; }
+      entries.push({ lens: key, verdict: String(value) });
+    });
+    return entries.length ? entries : null;
+  }
+
+  // Optional sanctum block, shown only for memory/autonomous agents.
+  // Returns null when absent or explicitly marked not present.
+  function normalizeSanctum(raw) {
+    if (!raw || typeof raw !== "object") { return null; }
+    if (raw.present === false) { return null; }
+    var files = [];
+    if (Array.isArray(raw.files)) {
+      raw.files.forEach(function (f) { if (f != null) { files.push(String(f)); } });
+    }
+    var s = {
+      location: raw.location != null ? String(raw.location) : "",
+      files: files,
+      note: raw.note != null ? String(raw.note) : ""
+    };
+    if (!s.location && !s.files.length && !s.note) { return null; }
+    return s;
+  }
+
+  // Optional experience block: journeys plus a headless note. Returns null when
+  // neither is usable.
+  function normalizeExperience(raw) {
+    if (!raw || typeof raw !== "object") { return null; }
+    var journeys = [];
+    if (Array.isArray(raw.journeys)) {
+      raw.journeys.forEach(function (j) {
+        if (!j || typeof j !== "object") { return; }
+        var name = j.name != null ? String(j.name) : "";
+        var steps = j.steps != null ? String(j.steps) : "";
+        if (!name && !steps) { return; }
+        journeys.push({ name: name, steps: steps });
+      });
+    }
+    var headless = raw.headless != null ? String(raw.headless) : "";
+    if (!journeys.length && !headless) { return null; }
+    return { journeys: journeys, headless: headless };
+  }
+
+  function renderOverview(data) {
+    els.subject.textContent = data.subject;
+    els.generated.textContent = data.generated;
+    els.schema.textContent = String(data.schema_version);
+    els.verdict.textContent = data.verdict;
+
+    if (data.grade) {
+      els.grade.textContent = data.grade;
+      els.grade.className = "grade g-" + data.grade;
+      els.grade.hidden = false;
+    }
+    if (data.summary) {
+      els.summaryText.textContent = data.summary;
+      els.summaryText.hidden = false;
+    }
+
+    els.counts.innerHTML = "";
+    SEVERITIES.forEach(function (s) {
+      var pill = document.createElement("span");
+      pill.className = "pill";
+      pill.innerHTML =
+        '<span class="dot ' + s + '"></span>' +
+        '<span class="lbl">' + SEV_LABEL[s] + '</span>' +
+        '<span class="n">' + data.counts[s] + "</span>";
+      els.counts.appendChild(pill);
+    });
+    els.overview.hidden = false;
+  }
+
+  // Each agent-block renderer leaves its section hidden when its data is null,
+  // so a stateless agent (no sanctum) or a minimal island never shows a blank
+  // panel and never throws.
+  function renderProfile(profile) {
+    if (!profile) { els.portrait.hidden = true; return; }
+    var typeTag = profile.agent_type
+      ? '<span class="type">' + esc(profile.agent_type) + "</span>"
+      : "";
+    var mission = profile.mission
+      ? '<div class="mission">' + esc(profile.mission) + "</div>"
+      : "";
+    els.portrait.innerHTML =
+      '<div class="icon">' + (profile.icon ? esc(profile.icon) : "🤖") + "</div>" +
+      '<div class="who">' +
+      '<div class="name">' + esc(profile.name || "(unnamed agent)") + "</div>" +
+      (profile.title ? '<div class="title">' + esc(profile.title) + "</div>" : "") +
+      mission +
+      typeTag +
+      "</div>";
+    els.portrait.hidden = false;
+  }
+
+  function renderCapabilities(list) {
+    if (!list) { els.capabilities.hidden = true; return; }
+    var items = list.map(function (c) {
+      return "<li>" +
+        '<span class="cap-name">' + esc(c.name) + "</span>" +
+        (c.kind ? '<span class="cap-kind">' + esc(c.kind) + "</span>" : "") +
+        (c.note ? '<span class="cap-note">' + esc(c.note) + "</span>" : "") +
+        "</li>";
+    }).join("");
+    els.capabilities.innerHTML =
+      "<h2>Capabilities</h2><ul class=\"cap-list\">" + items + "</ul>";
+    els.capabilities.hidden = false;
+  }
+
+  function renderLensVerdicts(entries) {
+    if (!entries) { els.lensVerdicts.hidden = true; return; }
+    var rows = entries.map(function (e) {
+      return "<dt>" + esc(e.lens) + "</dt><dd>" + esc(e.verdict) + "</dd>";
+    }).join("");
+    els.lensVerdicts.innerHTML =
+      "<h2>Per-lens verdicts</h2><dl class=\"kv\">" + rows + "</dl>";
+    els.lensVerdicts.hidden = false;
+  }
+
+  function renderSanctum(s) {
+    if (!s) { els.sanctum.hidden = true; return; }
+    var rows = "";
+    if (s.location) {
+      rows += "<dt>Location</dt><dd><code>" + esc(s.location) + "</code></dd>";
+    }
+    if (s.files.length) {
+      rows += "<dt>Sanctum files</dt><dd>" +
+        s.files.map(function (f) { return '<span class="mono">' + esc(f) + "</span>"; }).join(" ") +
+        "</dd>";
+    }
+    if (s.note) {
+      rows += "<dt>Note</dt><dd>" + esc(s.note) + "</dd>";
+    }
+    els.sanctum.innerHTML = "<h2>Sanctum (runtime memory)</h2><dl class=\"kv\">" + rows + "</dl>";
+    els.sanctum.hidden = false;
+  }
+
+  function renderExperience(exp) {
+    if (!exp) { els.experience.hidden = true; return; }
+    var html = "<h2>Experience</h2>";
+    if (exp.journeys.length) {
+      html += exp.journeys.map(function (j) {
+        return '<div class="journey">' +
+          '<div class="j-name">' + esc(j.name || "(unnamed journey)") + "</div>" +
+          (j.steps ? '<div class="j-steps">' + esc(j.steps) + "</div>" : "") +
+          "</div>";
+      }).join("");
+    }
+    if (exp.headless) {
+      html += '<dl class="kv" style="margin-top:12px"><dt>Headless</dt><dd>' +
+        esc(exp.headless) + "</dd></dl>";
+    }
+    els.experience.innerHTML = html;
+    els.experience.hidden = false;
+  }
+
+  // Every copied fix prompt opens by anchoring the fixing session to the same
+  // standards that produced the findings, so the fix is held to the bar too.
+  function standardsPreamble() {
+    if (!standards || !standards.canon) { return []; }
+    var bar = standards.canon + (standards.principles ? " and " + standards.principles : "");
+    var lines = [
+      "Hold " + bar + " as the bar for every line you change — a fix that adds ceremony is a new finding, not a fix."
+    ];
+    if (standards.scripts) {
+      lines.push("If the fix adds or changes scripts, follow " + standards.scripts + ".");
+    }
+    lines.push("");
+    return lines;
+  }
+
+  function composeThemePrompt(theme, resolved) {
+    var lines = standardsPreamble();
+    lines.push("Fix the following theme in " + subjectPath + ": " + theme.title);
+    lines.push("");
+    if (theme.root_cause) { lines.push("Root cause: " + theme.root_cause); }
+    if (theme.action) { lines.push("Fix: " + theme.action); }
+    if (resolved.length) {
+      lines.push("");
+      lines.push("Findings to address:");
+      resolved.forEach(function (f, i) {
+        lines.push((i + 1) + ". " + f.title);
+        if (f.location) { lines.push("   Location: " + f.location); }
+        if (f.evidence) { lines.push("   Evidence: " + f.evidence); }
+        if (f.recommendation) { lines.push("   Recommendation: " + f.recommendation); }
+      });
+    }
+    return lines.join("\n") + "\n";
+  }
+
+  function renderThemes(themes) {
+    if (!themes.length) { els.themes.hidden = true; return; }
+    els.themes.innerHTML = "<h2>Themes</h2>";
+    themes.forEach(function (t) {
+      var resolved = t.finding_ids
+        .map(function (id) { return findingsById[id]; })
+        .filter(function (f) { return !!f; });
+      var items = resolved.map(function (f) {
+        return '<div class="t-finding"><span class="mono">' + esc(f.id) + "</span> " +
+          esc(f.title) +
+          (f.location ? ' · <span class="mono">' + esc(f.location) + "</span>" : "") +
+          "</div>";
+      }).join("");
+
+      var node = document.createElement("div");
+      node.className = "theme";
+      node.innerHTML =
+        '<div class="t-head"><span class="t-title">' + esc(t.title) + "</span>" +
+        '<button class="small t-fix">Fix This Theme</button></div>' +
+        (t.root_cause ? '<div class="t-cause">Root cause: ' + esc(t.root_cause) + "</div>" : "") +
+        (t.action ? '<div class="t-action"><b>Fix:</b> ' + esc(t.action) + "</div>" : "") +
+        (items ? '<div class="t-findings">' + items + "</div>" : "");
+      node.querySelector(".t-fix").addEventListener("click", function () {
+        copyText(composeThemePrompt(t, resolved));
+      });
+      els.themes.appendChild(node);
+    });
+    els.themes.hidden = false;
+  }
+
+  function renderStrengths(list) {
+    if (!list.length) { els.strengths.hidden = true; return; }
+    els.strengths.innerHTML =
+      "<h2>Strengths</h2><ul class=\"strength-list\">" +
+      list.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") +
+      "</ul>";
+    els.strengths.hidden = false;
+  }
+
+  function renderRecommendations(recs) {
+    if (!recs.length) { els.recommendations.hidden = true; return; }
+    var html = "<h2>Recommendations</h2>";
+    recs.forEach(function (r) {
+      html += '<div class="rec"><span class="rank">#' + esc(String(r.rank)) + "</span>" +
+        esc(r.action) +
+        (r.resolves ? '<span class="resolves">resolves: ' + esc(r.resolves) + "</span>" : "") +
+        "</div>";
+    });
+    els.recommendations.innerHTML = html;
+    els.recommendations.hidden = false;
+  }
+
+  function renderNoFindings() {
+    els.root.innerHTML =
+      '<div class="no-findings">' +
+      '<div class="big">No findings</div>' +
+      "<div>The scanners returned a clean pass for this subject.</div>" +
+      "</div>";
+  }
+
+  function findingNode(f) {
+    var node = document.createElement("div");
+    node.className = "finding sev-" + f.severity;
+    node.setAttribute("data-id", f.id);
+
+    var sub =
+      esc(f.lens) +
+      (f.location ? ' · <span class="mono">' + esc(f.location) + "</span>" : "");
+
+    var rows =
+      "<dt>Lens</dt><dd>" + esc(f.lens) + "</dd>" +
+      (f.location ? "<dt>Location</dt><dd><code>" + esc(f.location) + "</code></dd>" : "") +
+      (f.evidence ? "<dt>Evidence</dt><dd>" + esc(f.evidence) + "</dd>" : "") +
+      (f.recommendation ? "<dt>Recommendation</dt><dd>" + esc(f.recommendation) + "</dd>" : "") +
+      (f.proposed_smallest ? "<dt>Proposed smallest</dt><dd>" + esc(f.proposed_smallest) + "</dd>" : "") +
+      (f.predicted_delta ? "<dt>Predicted delta</dt><dd>" + esc(f.predicted_delta) + "</dd>" : "");
+
+    node.innerHTML =
+      '<div class="row">' +
+      '<input type="checkbox" class="chk" aria-label="Select finding">' +
+      '<div class="head">' +
+      '<div class="title">' + esc(f.title) + "</div>" +
+      '<div class="sub">' + sub + "</div>" +
+      "</div>" +
+      '<span class="tag">' + SEV_LABEL[f.severity] + "</span>" +
+      '<span class="caret">▸</span>' +
+      "</div>" +
+      '<div class="body"><dl>' + rows + "</dl></div>";
+
+    var chk = node.querySelector(".chk");
+    chk.checked = !!selected[f.id];
+    chk.addEventListener("change", function () {
+      if (chk.checked) { selected[f.id] = true; } else { delete selected[f.id]; }
+      updateSelection();
+    });
+
+    var head = node.querySelector(".head");
+    var caret = node.querySelector(".caret");
+    function toggle() { node.classList.toggle("open"); }
+    head.addEventListener("click", toggle);
+    caret.addEventListener("click", toggle);
+
+    return node;
+  }
+
+  function renderFindings(list) {
+    els.root.innerHTML = "";
+    if (list.length === 0) {
+      renderNoFindings();
+      els.toolbar.hidden = true;
+      return;
+    }
+    els.toolbar.hidden = false;
+
+    SEVERITIES.forEach(function (sev) {
+      var group = list.filter(function (f) { return f.severity === sev; });
+      if (group.length === 0) { return; }
+      var wrap = document.createElement("div");
+      wrap.className = "group";
+      var h = document.createElement("h2");
+      h.innerHTML = '<span class="dot ' + sev + '"></span>' + SEV_LABEL[sev] + " (" + group.length + ")";
+      wrap.appendChild(h);
+      group.forEach(function (f) { wrap.appendChild(findingNode(f)); });
+      els.root.appendChild(wrap);
+    });
+  }
+
+  function updateSelection() {
+    var n = Object.keys(selected).length;
+    els.selCount.textContent = n + " selected";
+    els.btnCopy.disabled = n === 0;
+  }
+
+  function composePrompt() {
+    var picked = findings.filter(function (f) { return selected[f.id]; });
+    if (picked.length === 0) { return ""; }
+    var lines = standardsPreamble();
+    lines.push("Fix the following issues in " + subjectPath + ":");
+    lines.push("");
+    picked.forEach(function (f, i) {
+      lines.push((i + 1) + ". " + f.title);
+      if (f.location) { lines.push("   Location: " + f.location); }
+      if (f.evidence) { lines.push("   Evidence: " + f.evidence); }
+      if (f.recommendation) { lines.push("   Recommendation: " + f.recommendation); }
+      if (f.proposed_smallest) { lines.push("   Proposed smallest: " + f.proposed_smallest); }
+      lines.push("");
+    });
+    return lines.join("\n").replace(/\n+$/, "\n");
+  }
+
+  function showToast(text) {
+    els.toast.textContent = text;
+    els.toast.classList.add("show");
+    setTimeout(function () { els.toast.classList.remove("show"); }, 1600);
+  }
+
+  function fallbackCopy(text) {
+    els.fallbackText.value = text;
+    els.fallback.classList.add("show");
+    els.fallbackText.focus();
+    els.fallbackText.select();
+    try {
+      var ok = document.execCommand && document.execCommand("copy");
+      if (ok) {
+        showToast("Copied");
+        return;
+      }
+    } catch (e) { /* fall through to manual */ }
+    showToast("Copy the text shown below");
+  }
+
+  function copyText(text) {
+    if (!text) { return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { showToast("Copied"); },
+        function () { fallbackCopy(text); }
+      );
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function doCopy() {
+    copyText(composePrompt());
+  }
+
+  function wireToolbar() {
+    els.btnCopy.addEventListener("click", doCopy);
+    els.btnSelectAll.addEventListener("click", function () {
+      findings.forEach(function (f) { selected[f.id] = true; });
+      document.querySelectorAll(".finding .chk").forEach(function (c) { c.checked = true; });
+      updateSelection();
+    });
+    els.btnClear.addEventListener("click", function () {
+      selected = Object.create(null);
+      document.querySelectorAll(".finding .chk").forEach(function (c) { c.checked = false; });
+      els.fallback.classList.remove("show");
+      updateSelection();
+    });
+    els.btnExpandAll.addEventListener("click", function () {
+      document.querySelectorAll(".finding").forEach(function (n) { n.classList.add("open"); });
+    });
+    els.btnCollapseAll.addEventListener("click", function () {
+      document.querySelectorAll(".finding").forEach(function (n) { n.classList.remove("open"); });
+    });
+  }
+
+  function init() {
+    var island = document.getElementById("report-data");
+    var parsed;
+    try {
+      if (!island) { throw new Error("report-data island element not found"); }
+      parsed = JSON.parse(island.textContent);
+    } catch (err) {
+      showBanner(
+        "Could not parse the report data island.\n\n" +
+        "Error: " + (err && err.message ? err.message : String(err)) + "\n\n" +
+        "The findings could not be rendered. The JSON inside the " +
+        'report-data island (the application/json script tag) is malformed.'
+      );
+      return;
+    }
+
+    var data = normalize(parsed);
+
+    if (data.subject === PLACEHOLDER_SUBJECT) {
+      els.subject.textContent = data.subject;
+      showBanner(
+        "This is the unfilled report shell.\n\n" +
+        "The report-data island still carries the placeholder subject, so " +
+        "there are no findings here. Generate a real report with " +
+        "scripts/render_report.py."
+      );
+      return;
+    }
+
+    findings = data.findings;
+    subjectPath = data.subject;
+    standards = data.standards;
+    findingsById = Object.create(null);
+    findings.forEach(function (f) { findingsById[f.id] = f; });
+
+    renderProfile(data.agent_profile);
+    renderOverview(data);
+    renderCapabilities(data.capabilities);
+    renderLensVerdicts(data.detailed_analysis);
+    renderSanctum(data.sanctum);
+    renderExperience(data.experience);
+    renderThemes(data.themes);
+    renderStrengths(data.strengths);
+    renderRecommendations(data.recommendations);
+    renderFindings(findings);
+    wireToolbar();
+    updateSelection();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

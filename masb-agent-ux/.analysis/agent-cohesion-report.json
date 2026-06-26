@@ -1,0 +1,38 @@
+{
+  "lens": "agent-cohesion",
+  "verdict": "Authentic persona with well-aligned capabilities; redundancy and iteration gaps weaken the otherwise coherent design workflow.",
+  "findings": [
+    {
+      "id": "agent-cohesion-1",
+      "severity": "high",
+      "title": "Accessibility concerns spread across three capabilities with unclear layering",
+      "location": "references/design-system.md:22, references/accessibility-check.md:16-23, references/theme-validate.md:22",
+      "evidence": "DS includes accessibility (contrasts, touch targets) as a built-in design system section. AC then re-audits the same criteria across design system and UI specs. TV also checks 'do phases respect the defined accessibility level?' — three capabilities process overlapping WCAG concerns without a clear audit-versus-built-in distinction.",
+      "recommendation": "Either make DS accessibility purely about defining the target level (e.g., 'this project targets WCAG AA') and move all verification to AC+TV, or explicitly document the layering in each capability: DS specifies, AC audits, TV monitors across phases."
+    },
+    {
+      "id": "agent-cohesion-2",
+      "severity": "medium",
+      "title": "No Material Design 3 compliance validation capability",
+      "location": "references/theme-validate.md:17-22, references/accessibility-check.md:16-23",
+      "evidence": "The persona is an M3 specialist ('tu connais Material Design 3 sur le bout des doigts'), yet no capability validates that designs conform to M3-specific guidelines — elevation semantics, component role usage (e.g., is a BottomSheet used where a Dialog belongs?), dynamic color application, motion choreography tokens. TV checks cross-phase consistency (palette matching) but not M3 spec compliance.",
+      "recommendation": "Either add a dedicated M3 compliance capability (e.g., 'm3-audit') or extend TV to include official M3 guideline validation beyond simple cross-phase color/typo matching."
+    },
+    {
+      "id": "agent-cohesion-3",
+      "severity": "medium",
+      "title": "Design workflow terminates at validation with no iteration capability",
+      "location": "references/design-system.md:28, references/theme-validate.md:24-27",
+      "evidence": "DS states 'le design system est figé après validation HITL de la phase 00' and TV produces a deviation report but provides no path to revise. After TV finds issues, the user has no capability to update DS or US — they must prompt the agent manually. Real design workflows iterate: TV finds a palette drift → user wants to update the DS → no capability for that update.",
+      "recommendation": "Either remove the 'figé' constraint from DS (it's a process rule, not a design rule), or add an 'update-design-system' or 'revise-ui-spec' capability that explicitly handles revision against a baseline."
+    },
+    {
+      "id": "agent-cohesion-4",
+      "severity": "low",
+      "title": "Ambiguity between 'zero code' persona and implementation-oriented external skills",
+      "location": "references/design-system.md:18-19, references/accessibility-check.md:25, assets/CAPABILITIES-template.md:15-19, assets/CREED-template.md:44",
+      "evidence": "CREED says 'Ne jamais écrire de code, même une ligne' and persona says 'tu ne touches jamais au code'. Yet DS references font-m3-cli and material-symbols-cli (CLI tools), and AC/US reference adaptive, styles, and edge-to-edge skills which produce technical implementation patterns. First Breath clarifies these are for 'guidance technique' but capability prompts say 'consulte' without distinguishing conceptual guidance from execution.",
+      "recommendation": "Clarify in each capability prompt whether the external skill is for conceptual guidance only (e.g., 'load for reference to inform design decisions') or for active execution. If the agent should run these skills, update CREED's zero-code standing order to reflect tool use vs production code distinction."
+    }
+  ]
+}
