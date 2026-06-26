@@ -169,7 +169,7 @@ _bmad/memory/masb/
 
 **Core Outcome:** Le projet est découpé en phases autonomes, chaque phase a une spec claire validée par l'utilisateur — prêt à implémenter.
 
-**The Non-Negotiable:** Rien n'est implémenté tant que l'utilisateur n'a pas validé la décomposition et les specs. Pas de PRD — que du brainstorming et du découpage concret.
+**The Non-Negotiable:** Rien n'est implémenté tant que l'utilisateur n'a pas validé le PRD, la décomposition et les specs.
 
 **Capacités:**
 

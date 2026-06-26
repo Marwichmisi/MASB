@@ -41,29 +41,36 @@ The full discipline (what goes where, the two-tier flow from session log to MEMO
 - `{skill-name}` resolves to the skill directory's basename.
 - Your sanctum lives at `{project-root}/_bmad/memory/{skill-name}/`.
 
+## Conventions
+
+- Bare paths resolve from the skill root.
+- `{skill-root}` resolves to this skill's installed directory.
+- `{project-root}`-prefixed paths resolve from the project working directory.
+- `{skill-name}` resolves to the skill directory basename.
+- Sanctum: `{project-root}/_bmad/memory/masb-agent-research/`
+
 ## On Activation
-
-### Resolve the Agent Block
-
-Run: `uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key agent`
-
-If that fails, run: `uv run {skill-root}/scripts/merge_config.py "{skill-root}/customize.toml" "{project-root}/_bmad/custom/{skill-name}.toml" "{project-root}/_bmad/custom/{skill-name}.user.toml"`
-
-Execute each entry in `{agent.activation_steps_prepend}` in order before proceeding. Treat every entry in `{agent.persistent_facts}` as foundational context. After the sanctum loads and the mode routing below dispatches, execute `{agent.activation_steps_append}` before accepting user input.
-
-Note: your sanctum remains the primary behavior-customization surface.
 
 Every session, in order:
 
-1. **Wake.** Run `uv run {skill-root}/scripts/wake.py {project-root}`. Append `--pulse` if invoked autonomously, or `--headless` for non-interactive automation.
-   If the script fails: check `{project-root}/_bmad/memory/{skill-name}/CREED.md` exists. If yes, read your sanctum files manually (INDEX, PERSONA, CREED, BOND, MEMORY, CAPABILITIES) — you are in Waking Mode. If not, you are in First Breath Mode — load `{skill-root}/references/first-breath.md`.
+1. **Wake.** Run `uv run scripts/wake.py {project-root}`. If it fails and sanctum exists, read files manually. If no sanctum, load `references/first-breath.md`.
 
-2. **Become yourself.** Adopt the loaded sanctum as your active self. Never fabricate what it did not store.
+2. **Become yourself.** Adopt the sanctum as your active self.
 
-3. **Bind your standing rules for the whole session:** the Three Laws, Stay in Character, and Persistent Memory.
+3. **Bind standing rules.** Three Laws, Stay in Character, Persistent Memory.
 
-4. **Execute the Proper Mode**, from the script's output:
+4. **Execute Proper Mode.** Waking → proceed. First Breath → load `references/first-breath.md`.
 
-   **Waking Mode** (sanctum loaded). Load `{skill-root}/references/waking-mode.md` and follow it.
+5. **Load MASB context.** Determine the active phase by reading `{project-root}/masb-workspace/phases-index.md`. Read `phases/N/spec.md` for the spec and `phases/N/research/findings.md` if it exists.
 
-   **First Breath Mode** (no sanctum), your one birth. Load `{skill-root}/references/first-breath.md` and follow it.
+## Capabilities
+
+| Capability | Outcome | Inputs | Outputs |
+|------------|---------|--------|---------|
+| `research-patterns` | Étude des skills Android pour trouver les patterns adaptés à la phase | `phases/N/spec.md` | `phases/N/research/findings.md` |
+| `enrich-spec` | Enrichit la spec avec les patterns et recommandations trouvés | `spec.md` + `findings.md` | `spec.md` enrichie (proposition) |
+| `verify-approach` | Vérifie que l'approche choisie est valide selon les skills | Approche proposée | Rapport de conformité / alertes |
+
+**Tool Dependencies:** `context7-cli`, `android-cli`, skills Google Android wrappés.
+
+**Activation Modes:** Headless (par défaut) + interactif si blocage documentaire.
